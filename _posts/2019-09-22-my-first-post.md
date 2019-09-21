@@ -1,9 +1,11 @@
 ---
-title: My first post
+title: Guessing someone's location on earth based on their distance?
 date: 2019-09-22
+header:
+  image: "assets/images/london.png"
 
 
 ---
-## What is this?
+
 
 this is my first post.

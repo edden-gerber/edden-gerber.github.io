@@ -20,7 +20,7 @@ title                    : "Edden's Data Science Blog"
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
 name                     : "Edden Gerber"
-description              : "An amazing website."
+description              : "Data science portfolio and blog"
 url                      : edden-gerber.github.io # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
@@ -108,8 +108,8 @@ analytics:
 # Site Author
 author:
   name             : "Edden Gerber"
-  avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : "I am an **amazing** person."
+  avatar           : "assets/images/my_pic_profile.jpeg"
+  bio              : "Data scientist with a PhD in computational neuroscience."
   location         : "Tel Aviv, Israel"
   email            :
   links:
@@ -292,3 +292,11 @@ defaults:
       comments: # true
       share: true
       related: true
+
+  # _pages
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: single
+      author_profile: true
