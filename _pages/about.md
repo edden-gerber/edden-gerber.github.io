@@ -1,7 +1,9 @@
 ---
 title: "About me"
 permalink: /about/
-author profile: false
+author_profile: false
+layout: wide
+
 header:
   image: "assets/images/my_pic_header.jpg"
 ---
