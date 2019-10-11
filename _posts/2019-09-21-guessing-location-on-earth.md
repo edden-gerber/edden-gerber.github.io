@@ -136,7 +136,7 @@ fig
 ```
 
 ...And here we are!
-![So far so good](./assets/images/2850_km_circle.png)
+![So far so good](../assets/images/2850_km_circle.png)
 
 Our next task is to take this array and translate it into a list of probabilities for possible discrete locations. We need to define what we mean by "location", so let's say our desired resolution is city-level (which is suitable given our ~5km grid resolution). Ideally, we could extract (using the geopy library) the country-city label for each point on our circle, add up the population density values belonging to each unique label, and divide each by the total density across the array to get a probability between 0 and 1. This is because if a city is large enough to comprise several samples, the probability to be in this city should be the sum of the probabilities of being in each of its sampled points.
 
@@ -157,7 +157,7 @@ plt.ylabel('Population density', size=16);
 plt.title('Population density across the circle', size=20);```
 ```
 
-![a time series! I feel at home](assets/images/unfiltered signal.png)
+![a time series! I feel at home](../assets/images/unfiltered signal.png)
 
 So - what we have here is a time series - or rather, a space series if you will. We can see the peak clusters that correspond to the blobs in Russia, Ethiopia and North-Africa-Europe in the map above (angle 0 is right above the center). With my background of analyzing biological time series data in my PhD, I will right at home here... I also know that I can't just run a peak-finding function on this series, since it is very non-smooth and so there are peaks everywhere - in the sense of samples that are simply higher than their immediate neighbors.
 
@@ -179,7 +179,7 @@ plt.xlim([305, 315]);
 
 ```
 
-![this is unhelpful](assets/images/unfiltered signal with peaks.png)
+![this is unhelpful](../assets/images/unfiltered signal with peaks.png)
 
 _find_peaks_ has parameters we can play with to narrow down the results, like minimal height, minimal distance from other peaks, and so on. Rather than get into that, I prefer to look at the problem from a signal processing perspective and simply apply a smoothing filter. This has the advantages of not only getting rid of this pesky quantization noise in the signal, but also introducing a bit of spatial integration - that is, the value at each point will reflect not only the density at this point but also a weighted sum of neighboring points (since any smoothing - i.e. "low pass" - filter is basically a moving weighted average). This works for us because by going with the "peaks" approach we're basically ignoring the data around the peaks.
 
@@ -215,7 +215,7 @@ plt.legend(['Before filtering','After filtering'], fontsize=16);
 plt.xlim([300,350]);
 ```
 
-![much better](assets/images/filtered vs unfiltered.png)
+![much better](../assets/images/filtered vs unfiltered.png)
 
 Looking at the entire circle again, and with some nicer graphics:
 
@@ -230,7 +230,7 @@ plt.title('Peaks in population density', size=20);
 
 ```
 
-![nice plots are what it's all about](assets/images/smoothed with nice peaks.png)
+![nice plots are what it's all about](../assets/images/smoothed with nice peaks.png)
 
 Okay, that was fun but we still have the main part of the algorithm ahead of us. Next we need to extract the location information from each peak's coordinates. For this we'll need these two functions that extract country and city (coded as by Google "locality" as not every place is within a city) from the gmap data structure.
 
