@@ -298,7 +298,8 @@ candidate_locations.reset_index(inplace=True, drop=True)
 ```
 
 ...Aaand print!
-```Python
+
+```python
 # Finally, display results with probabilities:
 for cname, cgroup in candidate_locations.groupby('country', sort=False): # sort=False because we want to keep our previous sort (not alphabetical)
     pop_within_country = cgroup.country_total_pop_density.mean() # the value is the same for all members of the group, so 'mean' just extracts this value
