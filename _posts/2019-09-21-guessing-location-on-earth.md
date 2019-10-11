@@ -147,7 +147,7 @@ import matplotlib.pyplot as plt
 
 x_axis_values = np.linspace(360/n_samples,360,n_samples)
 
-plt.figure(figsize=[20,5])
+plt.figure(figsize=[12,6])
 plt.plot(x_axis_values, pop_density, c='r')
 
 plt.xlabel('Location on circle (degrees)', size=16);
@@ -167,7 +167,7 @@ from scipy import signal # this library has the find_peaks function
 peak_indexes = signal.find_peaks(pop_density)[0]
 peak_values = pop_density[peak_indexes]
 
-plt.figure(figsize=[20,5])
+plt.figure(figsize=[12,6])
 plt.plot(x_axis_values, pop_density, c='r')
 
 plt.scatter(x_axis_values[peak_indexes],peak_values, c='r', s=100);
@@ -200,7 +200,7 @@ peak_indexes_smoothed = signal.find_peaks(pop_density_smoothed, height = min_hei
 peak_values_smoothed = pop_density_smoothed[peak_indexes_smoothed]
 
 # Compare original to filtered signal:
-plt.figure(figsize=[20,5])
+plt.figure(figsize=[12,6])
 plt.plot(x_axis_values, pop_density, c='r')
 plt.plot(x_axis_values, pop_density_smoothed, c='b')
 
@@ -219,7 +219,7 @@ Looking at the entire circle again, and with some nicer graphics:
 
 ```python
 # Plot peaks on our circle
-plt.figure(figsize=[20,5])
+plt.figure(figsize=[12,6])
 plt.plot(x_axis_values, pop_density_smoothed)
 plt.scatter(x_axis_values[peak_indexes_smoothed],peak_values_smoothed, c=-np.log(peak_values_smoothed+1), s=10*np.log(peak_values_smoothed+1), cmap='RdYlBu');
 plt.xlabel('Location on circle (deg)',size=16);
