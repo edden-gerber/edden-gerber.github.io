@@ -1,5 +1,5 @@
 ---
-title: "Pet project: can you guess someone's location on earth based on their distance?"
+title: "Pet project: guessing someone's location on earth based on their distance"
 date: 2019-10-11
 share: true
 header:
@@ -136,7 +136,7 @@ fig
 ```
 
 ...And here we are!
-![So far so good](assets/images/2850 km circle.png)
+![So far so good](./assets/images/2850_km_circle.png)
 
 Our next task is to take this array and translate it into a list of probabilities for possible discrete locations. We need to define what we mean by "location", so let's say our desired resolution is city-level (which is suitable given our ~5km grid resolution). Ideally, we could extract (using the geopy library) the country-city label for each point on our circle, add up the population density values belonging to each unique label, and divide each by the total density across the array to get a probability between 0 and 1. This is because if a city is large enough to comprise several samples, the probability to be in this city should be the sum of the probabilities of being in each of its sampled points.
 
