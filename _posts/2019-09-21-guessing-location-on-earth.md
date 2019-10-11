@@ -5,8 +5,6 @@ share: true
 header:
   image: "assets/images/london.png"
   teaser: "assets/images/london.png"
-
-
 ---
 
 If I say I'm 50 km from your location, would you be able to guess where I am?
@@ -271,7 +269,7 @@ candidate_locations.dropna(axis=0, inplace=True)
 
 This is now what our dataframe looks like:
 
-XXX add image XXX
+![dataframe head](../assets/images/dataframe.png)
 
 We could wrap up here and simply sort by _pop_density_ to get our final suggestions. But we'll go a bit further and handle the case of non-unique rows. That is, the case that there are multiple peaks within the same locality. Although it's a bit problematic to do this after abandoning the idea of continuous integration in favor of focusing on peaks (as it unjustifiably biases our results toward localities that have multiple distinct density peaks), let's just go ahead and sum these together, using of course the awesome power of groupby.
 At the same time, it makes sense to separate our results into multiplicative country and locality probabilities - such that the probability for a country is the sum of probabilities of locations within it, and probabilities for localities are computed within their respective countries. This is also easily accomplished with groupby.
@@ -313,11 +311,12 @@ for cname, cgroup in candidate_locations.groupby('country', sort=False): # sort=
         print('\t\t(%.2f%%) ' %(perc) + (' ' if perc<10 else '') + ' \tLocality: ' + lname) # Some formatting to make sure the columns are aligned. Is there maybe a better way to do this...?
 ```
 
-XXX add image XXX
+![2850km results](../assets/images/results_berlin.png "right on the money")
+
 
 So our most likely result is Germany with 53.5%, with Berlin being the most likely location within this country. Incidentally, this is indeed where my conversation partner was at the time, so that's nice and validating.
 What if they happened to be a bit further away, say in Brussels, Belgium (3245km)? Well, since our algorithm cares about nothing but population density, our answer would have been very different:
 
-XXX image - 3245 km XXX
+![3245km results](../assets/images/results_karachi.png "showing only first two countries")
 
-This would of course be wrong if the other person was an Israeli citizen like me, which implies a strong prior probability against Karachi. So on a final note, how could we take this little project further if we wanted it to take advantage of additional knowledge that we may have? One idea that comes up is to use international travel statistics - what is the volume of travel between pairs of countries - and generating from it a probability prior (assuming of course that we know the target individual's nationality). Another idea is that beauty and truth are one and the same. This idea originates in Udi Harary, although some claim that it has its precedents in Plato.
+This would of course be wrong if the other person was an Israeli citizen like myself, implying a strong prior probability against Karachi. So on a final note, how could we take this little project further if we wanted it to take advantage of additional knowledge that we may have? One idea that comes up is to use international travel statistics - what is the volume of travel between pairs of countries - and generating from it a probability prior (assuming of course that we know the target individual's nationality). Another idea is that beauty and truth are one and the same. This idea originates in Udi Harary, although some claim that it has its precedents in Plato.
