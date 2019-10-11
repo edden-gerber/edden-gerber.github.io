@@ -185,7 +185,7 @@ What kind of filter to use? Common filters used in signal processing such as the
 
 We just need to select one parameter - the standard deviation (width) of our Gaussian, corresponding to the degree of smoothing. A width of 5km makes sense and seems to generate good results - let's compare the signals and detected peaks before and after filtering (again zooming in, and let's also add a minimal height criterion to find_peaks to get rid of very low peaks):
 
-```Python
+```python
 from scipy import ndimage # the gaussian filter is part of the image processing library
 
 filter_width_km = 5
@@ -231,7 +231,7 @@ plt.title('Peaks in population density', size=20);
 
 Okay, that was fun but we still have the main part of the algorithm ahead of us. Next we need to extract the location information from each peak's coordinates. For this we'll need these two functions that extract country and city (coded as by Google "locality" as not every place is within a city) from the gmap data structure.
 
-```Python
+```python
 def get_country(Location):
     country = np.nan
     for loc_info in Location.raw.get('address_components'):
@@ -320,4 +320,4 @@ What if they happened to be a bit further away, say in Brussels, Belgium (3245km
 
 ![3245km results](../assets/images/results_karachi.png "showing only first two countries")
 
-This would of course be wrong if the other person was an Israeli citizen like myself, implying a strong prior probability against Karachi. So on a final note, how could we take this little project further if we wanted it to take advantage of additional knowledge that we may have? One idea that comes up is to use international travel statistics - what is the volume of travel between pairs of countries - and generating from it a probability prior (assuming of course that we know the target individual's nationality). Another idea is that beauty and truth are one and the same. This idea originates in Udi Harary, although some claim that it has its precedents in Plato.
+This would of course be wrong if the other person was an Israeli citizen like myself, implying a strong prior probability against Karachi. So on a final note, how could we take this little project further if we wanted it to take advantage of additional knowledge that we may have? One idea that comes up is to use international travel statistics - what is the volume of travel between pairs of countries - and generating from it a probability prior (assuming of course that we know the target individual's nationality). Another idea is...
