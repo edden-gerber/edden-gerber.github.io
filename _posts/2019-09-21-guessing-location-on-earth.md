@@ -11,7 +11,7 @@ If I say I'm 50 km from your location, would you be able to guess where I am?
 
 This question came up as I was chatting with someone on a popular dating app. This app like others of its kind is based on users' location, and so displays the distance of potential matches from your location. This particular person happened to be traveling for work about 2800 km away at the time, and as I tried to guess where they were visiting, I occurred to me that a bit of data and coding can make this game much easier.
 
-This turned out to be a very entertaining one-day project, that had me looking into world population databases, sphere geometry, google maps code libraries, and signal analysis. Without further ado, here's the idea: given that a person is located in unknown coordinates on Earth _(lat<sub>2</sub>, long<sub>2</sub>)_ with a known distance from a location _(lat<sub>1</sub>, long<sub>1</sub>)_, how can we best guess _(lat<sub>2</sub>, long<sub>2</sub>)_? My approach was to use world population density data, and assign probabilities to locations based on this density. Of course, depending on the circumstances there could be many other ways to narrow down the possibilities (for example, I could know the other person's nationality, reason for traveling etc.), but since in the context of this pet project I only used population data, I'm basically making the assumption that I have no such knowledge and that the person is randomly sampled from the Earth population. In the final notes I'll get to how to how to possibly go beyond this simplification.
+This turned out to be a very entertaining one-day project, that had me looking into world population data, sphere geometry, google maps API, and even signal processing. This is the idea: given that a person is located in unknown coordinates on Earth _(lat<sub>2</sub>, long<sub>2</sub>)_ but with known distance from a location _(lat<sub>1</sub>, long<sub>1</sub>)_, how can we best guess _(lat<sub>2</sub>, long<sub>2</sub>)_? My approach was to use world population density data, and assign probabilities to locations based on this density. Of course, depending on the circumstances there could be many other ways to narrow down the possibilities (for example, I could know the other person's nationality, reason for traveling etc.), but since in the context of this pet project I only used population data, I'm effectively making the assumption that I have no such knowledge and that the person is randomly sampled from the Earth population. In the final notes I'll get to how to how to possibly go beyond this simplification.
 
 First we need some data. I ended up on [NASA's Socioeconomic Data and Applications Center (SEDAC)](https://sedac.ciesin.columbia.edu/) website, where I found the Gridded Population of the World (GPW) v4.11 data set ([download here](https://sedac.ciesin.columbia.edu/data/set/gpw-v4-population-density-rev11/data-download), free registration required). Several resolutions are available - a 2.5 Minute (~5km) grid seemed good enough to me without having to deal with too large of a dataset.
 
@@ -210,7 +210,7 @@ plt.xlabel('Location on circle (deg)',size=16);
 plt.ylabel('Population density',size=16);
 plt.title('Peaks in population density', size=20);
 plt.legend(['Before filtering','After filtering'], fontsize=16);
-plt.xlim([300,350]);
+plt.xlim([310, 335]);
 ```
 
 ![filtered vs unfiltered](../assets/images/filtered vs unfiltered.png "much better")
@@ -316,6 +316,7 @@ for cname, cgroup in candidate_locations.groupby('country', sort=False): # sort=
 
 
 So our most likely result is Germany with 53.5%, with Berlin being the most likely location within this country. Incidentally, this is indeed where my conversation partner was at the time, so that's nice and validating.
+
 What if they happened to be a bit further away, say in Brussels, Belgium (3245km)? Well, since our algorithm cares about nothing but population density, our answer would have been very different:
 
 ![3245km results](../assets/images/results_karachi.png "showing only first two countries")
