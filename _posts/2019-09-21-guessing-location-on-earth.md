@@ -134,7 +134,7 @@ fig
 ```
 
 ...And here we are!
-![circle around location](../assets/images/2850_km_circle.png "So far so good")
+![circle around location](../assets/images/guess_location/2850_km_circle.png "So far so good")
 
 Our next task is to take this array and translate it into a list of probabilities for possible discrete locations. We need to define what we mean by "location", so let's say our desired resolution is city-level (which is suitable given our ~5km grid resolution). Ideally, we could extract (using the geopy library) the country-city label for each point on our circle, add up the population density values belonging to each unique label, and divide each by the total density across the array to get a probability between 0 and 1. This is because if a city is large enough to comprise several samples, the probability to be in this city should be the sum of the probabilities of being in each of its sampled points.
 
@@ -155,7 +155,7 @@ plt.ylabel('Population density', size=16);
 plt.title('Population density across the circle', size=20);```
 ```
 
-![unfiltered signal](../assets/images/unfiltered signal.png "Space series")
+![unfiltered signal](../assets/images/guess_location/unfiltered signal.png "Space series")
 
 So - what we have here is a time series - or rather a space series if you will. We can see the peak clusters that correspond to the blobs in Russia, Ethiopia and North-Africa-Europe in the map above (angle 0 is right above the center). With my background of analyzing biological time series data in my PhD, I will right at home here... I also know that I can't just run a peak-finding function on this series, since it is very non-smooth and so there are peaks everywhere - in the sense of samples that are simply higher than their immediate neighbors.
 
@@ -177,7 +177,7 @@ plt.title('Population density across the circle', size=20);
 plt.xlim([305, 315]);
 ```
 
-![unfiltered with peaks](../assets/images/unfiltered signal with peaks.png "this is unhelpful")
+![unfiltered with peaks](../assets/images/guess_location/unfiltered signal with peaks.png "this is unhelpful")
 
 _find_peaks_ has parameters we can play with to narrow down the results, like minimal height, minimal distance from other peaks, and so on. Rather than get into that, I prefer to look at the problem from a signal processing perspective and simply apply a smoothing filter. This has the advantages of not only getting rid of this pesky quantization noise in the signal, but also introducing a bit of spatial integration - that is, the value at each point will reflect not only the density at this point but also a weighted sum of neighboring points (since any smoothing - i.e. "low pass" - filter is basically a moving weighted average). This works for us because by going with the "peaks" approach we're basically ignoring the data around the peaks.
 
@@ -213,7 +213,7 @@ plt.legend(['Before filtering','After filtering'], fontsize=16);
 plt.xlim([310, 335]);
 ```
 
-![filtered vs unfiltered](../assets/images/filtered vs unfiltered.png "much better")
+![filtered vs unfiltered](../assets/images/guess_location/filtered vs unfiltered.png "much better")
 
 Looking at the entire circle again, and with some nicer graphics:
 
@@ -227,7 +227,7 @@ plt.ylabel('Population density',size=16);
 plt.title('Peaks in population density', size=20);
 ```
 
-![smoothed signal with peaks](../assets/images/smoothed with nice peaks.png "nice plots are what it's all about")
+![smoothed signal with peaks](../assets/images/guess_location/smoothed with nice peaks.png "nice plots are what it's all about")
 
 Okay, that was fun but we still have the main part of the algorithm ahead of us. Next we need to extract the location information from each peak's coordinates. For this we'll need these two functions that extract country and city (coded as by Google "locality" as not every place is within a city) from the gmap data structure.
 
@@ -269,7 +269,7 @@ candidate_locations.dropna(axis=0, inplace=True)
 
 This is now what our dataframe looks like:
 
-![dataframe head](../assets/images/dataframe.png)
+![dataframe head](../assets/images/guess_location/dataframe.png)
 
 We could wrap up here and simply sort by _pop_density_ to get our final suggestions. But we'll go a bit further and handle the case of non-unique rows. That is, the case that there are multiple peaks within the same locality. Although it's a bit problematic to do this after abandoning the idea of continuous integration in favor of focusing on peaks (as it unjustifiably biases our results toward localities that have multiple distinct density peaks), let's just go ahead and sum these together, using of course the awesome power of groupby.
 At the same time, it makes sense to separate our results into multiplicative country and locality probabilities - such that the probability for a country is the sum of probabilities of locations within it, and probabilities for localities are computed within their respective countries. This is also easily accomplished with groupby.
@@ -312,13 +312,13 @@ for cname, cgroup in candidate_locations.groupby('country', sort=False): # sort=
         print('\t\t(%.2f%%) ' %(perc) + (' ' if perc<10 else '') + ' \tLocality: ' + lname) # Some formatting to make sure the columns are aligned. Is there maybe a better way to do this...?
 ```
 
-![2850km results](../assets/images/results_berlin.png "right on the money")
+![2850km results](../assets/images/guess_location/results_berlin.png "right on the money")
 
 
 So our most likely result is Germany with 53.5%, with Berlin being the most likely location within this country. Incidentally, this is indeed where my conversation partner was at the time, so that's nice and validating.
 
 What if they happened to be a bit further away, say in Brussels, Belgium (3245km)? Well, since our algorithm cares about nothing but population density, our answer would have been very different:
 
-![3245km results](../assets/images/results_karachi.png "showing only first two countries")
+![3245km results](../assets/images/guess_location/results_karachi.png "showing only first two countries")
 
 This would of course be wrong if the other person was an Israeli citizen like myself, implying a strong prior probability against Karachi. So on a final note, how could we take this little project further if we wanted it to take advantage of additional knowledge that we may have? One idea that comes up is to use international travel statistics - what is the volume of travel between pairs of countries - and generating from it a probability prior (assuming of course that we know the target individual's nationality).
