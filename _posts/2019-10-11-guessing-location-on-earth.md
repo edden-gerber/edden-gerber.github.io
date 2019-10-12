@@ -3,8 +3,8 @@ title: "Pet project: guessing someone's location on earth based on their distanc
 date: 2019-10-11
 share: true
 header:
-  image: "assets/images/london.png"
-  teaser: "assets/images/london.png"
+  image: "assets/images/guess_location/london.png"
+  teaser: "assets/images/guess_location/london.png"
 ---
 
 If I say I'm 50 km from your location, would you be able to guess where I am?
