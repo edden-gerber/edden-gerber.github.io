@@ -13,6 +13,8 @@ This question came up as I was chatting with someone on a popular dating app. Th
 
 This turned out to be a very entertaining one-day project, that had me looking into world population data, sphere geometry, google maps API, and even signal processing. This is the idea: given that a person is located in unknown coordinates on Earth _(lat<sub>2</sub>, long<sub>2</sub>)_ but with known distance from a location _(lat<sub>1</sub>, long<sub>1</sub>)_, how can we best guess _(lat<sub>2</sub>, long<sub>2</sub>)_? My approach was to use world population density data, and assign probabilities to locations based on this density. Of course, depending on the circumstances there could be many other ways to narrow down the possibilities (for example, I could know the other person's nationality, reason for traveling etc.), but since in the context of this pet project I only used population data, I'm effectively making the assumption that I have no such knowledge and that the person is randomly sampled from the Earth population. In the final notes I'll get to how to how to possibly go beyond this simplification.
 
+## First stop: NASA
+
 First we need some data. I ended up on [NASA's Socioeconomic Data and Applications Center (SEDAC)](https://sedac.ciesin.columbia.edu/) website, where I found the Gridded Population of the World (GPW) v4.11 data set ([download here](https://sedac.ciesin.columbia.edu/data/set/gpw-v4-population-density-rev11/data-download), free registration required). Several resolutions are available - a 2.5 Minute (~5km) grid seemed good enough to me without having to deal with too large of a dataset.
 
 This in an ASCII file containing 4320 rows and 8640 columns of numbers, corresponding to population density estimates for a square grid covering the Earth's surface (180&deg of latitude and 360%deg of longitude in steps of 2.5 Minutes, or 0.04167%deg). It also contains six header lines. Non-land locations are coded as -9999, which we'll replace with NaN (I'm using Python; I place import commands where they are first required for clarity).
@@ -34,7 +36,9 @@ data[data==-9999]=np.nan
 
 Our strategy would be to provide a center location _(lat<sub>1</sub>, long<sub>1</sub>)_ and distance _d_, retrieve all population density grid entries that fall on the corresponding circle, and derive probabilities for discrete location names - the latter using Google Maps' API to translate coordinates to rich location data.
 
-This is where I ran into the first challenge: on a spherical coordinate system, how do we compute the set of coordinates that make up our circle of equidistant points? A very short attempt with pen and paper and trying to recall that most useless of high school classes, trigonometry, quickly led to the realization that this is not a simple problem. Not simple, of course, only in the sense that it means I had to [look up the formulas online](https://www.movable-type.co.uk/scripts/latlong.html) rather than figure it all out myself. So here is a function that translates a center point, distance and angle to the corresponding target coordinate on the circle circumference:
+## Doing the math
+
+This is where I ran into the first challenge: on a spherical coordinate system, how do we compute the set of coordinates that make up our circle of equidistant points? After a very short attempt with pen and paper and trying to recall that most useless of high school subjects, trigonometry, I quickly realized that this is not a simple problem. Not simple, of course, only in the sense that it means I had to [look up the formulas online](https://www.movable-type.co.uk/scripts/latlong.html) rather than figure it all out myself. So here is a function that translates a center point, distance and angle to the corresponding target coordinate on the circle circumference:
 
 ```python
 import math
@@ -59,6 +63,8 @@ def target_coord(center_coord, angle, distance_km, sphere_radius_km=EARTH_RADIUS
     target_longitude = np.mod(math.degrees(y2)+540,360)-180
     return target_latitude, target_longitude
 ```
+
+## Putting it together
 
 Next, let's add a couple of utility functions to convert earth coordinates to row and column in our dataset and vice versa (actually we'll never use _index_to_coord_ - it's here just for completeness):
 
@@ -103,6 +109,8 @@ for idx, angle in enumerate(np.linspace(0, 360-(360/n_samples), num=n_samples)):
 pop_density[np.isnan(pop_density)] = 0
 ```
 
+## It's map time
+
 With a set of coordinates and population density values, we are ready to plot our preliminary results on a map!
 We'll handle this aspect using the gmaps and geopy libraries. Note that to access Gmap's API, we need to generate an API key. I already had a Google Cloud account so doing this was simple using [these instructions](https://developers.google.com/maps/documentation/embed/get-api-key). Make sure you get your own key if you want to run this code yourself.
 This is what we need to set up:
@@ -135,6 +143,8 @@ fig
 
 ...And here we are!
 ![circle around location](../assets/images/guess_location/2850_km_circle.png "So far so good")
+
+## Smoothing out the details
 
 Our next task is to take this array and translate it into a list of probabilities for possible discrete locations. We need to define what we mean by "location", so let's say our desired resolution is city-level (which is suitable given our ~5km grid resolution). Ideally, we could extract (using the geopy library) the country-city label for each point on our circle, add up the population density values belonging to each unique label, and divide each by the total density across the array to get a probability between 0 and 1. This is because if a city is large enough to comprise several samples, the probability to be in this city should be the sum of the probabilities of being in each of its sampled points.
 
@@ -229,6 +239,8 @@ plt.title('Peaks in population density', size=20);
 
 ![smoothed signal with peaks](../assets/images/guess_location/smoothed with nice peaks.png "nice plots are what it's all about")
 
+## Going local
+
 Okay, that was fun but we still have the main part of the algorithm ahead of us. Next we need to extract the location information from each peak's coordinates. For this we'll need these two functions that extract country and city (coded as by Google "locality" as not every place is within a city) from the gmap data structure.
 
 ```python
@@ -297,6 +309,8 @@ candidate_locations.sort_values(['country_total_pop_density','locality_total_pop
 candidate_locations.reset_index(inplace=True, drop=True)
 ```
 
+## Drumroll please
+
 ...Aaand print!
 
 ```python
@@ -314,10 +328,9 @@ for cname, cgroup in candidate_locations.groupby('country', sort=False): # sort=
 
 ![2850km results](../assets/images/guess_location/results_berlin.png "right on the money")
 
-
 So our most likely result is Germany with 53.5%, with Berlin being the most likely location within this country. Incidentally, this is indeed where my conversation partner was at the time, so that's nice and validating.
 
-What if they happened to be a bit further away, say in Brussels, Belgium (3245km)? Well, since our algorithm cares about nothing but population density, our answer would have been very different:
+But what if they happened to be a bit further away, say in Brussels, Belgium (3245km)? Well, since our algorithm cares about nothing but population density, our answer would have been very different:
 
 ![3245km results](../assets/images/guess_location/results_karachi.png "showing only first two countries")
 
