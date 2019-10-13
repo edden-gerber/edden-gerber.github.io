@@ -2,6 +2,7 @@
 title: "Pet project: guessing someone's location on earth based on their distance"
 date: 2019-10-11
 share: true
+excerpt: "test"
 header:
   image: "assets/images/guess_location/london.png"
   teaser: "assets/images/guess_location/london.png"
@@ -314,7 +315,7 @@ candidate_locations.reset_index(inplace=True, drop=True)
 ...Aaand print!
 
 ```python
-# Finally, display results with probabilities:
+# Display results with probabilities:
 for cname, cgroup in candidate_locations.groupby('country', sort=False): # sort=False because we want to keep our previous sort (not alphabetical)
     pop_within_country = cgroup.country_total_pop_density.mean() # the value is the same for all members of the group, so 'mean' just extracts this value
     perc = pop_within_country/total_pop*100
@@ -334,8 +335,8 @@ But what if they happened to be a bit further away, say in Brussels, Belgium (32
 
 ![3245km results](../assets/images/guess_location/results_karachi.png "showing only first two countries")
 
-This would of course be wrong if the other person was an Israeli citizen like myself, implying a strong prior probability against Karachi. So on a final note, how could we take this little project further if we wanted it to take advantage of additional knowledge that we may have? One idea that comes up is to use international travel statistics - what is the volume of travel between pairs of countries - and generating from it a probability prior (assuming of course that we know the target individual's nationality). Of course, having two or more sets of probabilities means that I need to decide how to weigh them. I could try to learn these weights or even use a more complex prediction model using each set as a feature - however this makes it a supervised learning problem requiring labeled data of people's distances and locations.
+This would of course be wrong if the other person was an Israeli citizen like myself, implying a strong prior probability against Karachi. So on a final note, how could we take this little project further if we wanted it to take advantage of additional knowledge that we may have? One idea that comes up is to use international travel statistics - what is the volume of travel between pairs of countries - and generating from it a probability prior (assuming of course that we know the target individual's nationality). Of course, having two or more sets of probabilities means that I need to decide how to weigh them. I could try to learn these weights or even use a more complex prediction model using each set as a feature - though this would make it a supervised learning problem requiring labeled data of people's distances and locations.
 
-### To sum up
+## To sum up
 
 This was a fun and educational little project. I enjoyed taking a simple idea and carrying it all the way to a working solution, discovering along the way how not so simple it actually is. As for the text conversation that sparked this idea, unfortunately it never became more than that. Oh well...
