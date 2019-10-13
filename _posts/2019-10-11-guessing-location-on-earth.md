@@ -2,7 +2,7 @@
 title: "Pet project: guessing someone's location on earth based on their distance"
 date: 2019-10-11
 share: true
-excerpt: "test"
+excerpt: "A small project encompassing population data, geometry, signal processing and Google Maps API"
 header:
   image: "assets/images/guess_location/london.png"
   teaser: "assets/images/guess_location/london.png"
