@@ -6,6 +6,8 @@ excerpt: "A small project encompassing population data, geometry, signal process
 header:
   image: "assets/images/guess_location/london.png"
   teaser: "assets/images/guess_location/london.png"
+toc: true
+toc_sticky: true
 ---
 
 If I say I'm 50 km from your location, would you be able to guess where I am?
