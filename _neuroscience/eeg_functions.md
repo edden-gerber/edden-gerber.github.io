@@ -1,7 +1,7 @@
 ---
 title: "MATLAB functions for time series analysis and statistics"
 permalink: /eeg_functions/
-date: 2019-10-11
+date: 2019-10-13
 share: true
 excerpt: "MATLAB functions for time series analysis and statistics"
 header:

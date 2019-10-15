@@ -11,18 +11,26 @@ toc: true
 toc_sticky: true
 ---
 
-This guide is about running basic fMRI analysis using FreeSurfer, FSFast, and Matlab, including anatomical processing, functional data preprocessing, first-level GLM analysis, and importing all relevant data into Matlab for subsequent analysis. See the [accompanied guide on how to plan and run an fMRI experiment](/plan_and_run_fmri_exp/). Note that this guide does not deal with group-level analysis or any advanced methods. Using the accompanied code requires at least a basic knowledge of Matlab.
-
-The guide is accompanied by several supporting files:
-* [](...)
+This guide is about running basic fMRI analysis using FreeSurfer, FSFast, and Matlab, including anatomical processing, functional data preprocessing, first-level GLM analysis, and importing all relevant data into Matlab for subsequent analysis, and includes complete and documented Matlab scripts. See the [guide on how to plan and run an fMRI experiment](/plan_and_run_fmri_exp/) for more basic information and tips about running an fMRI experiment. This guide does not deal with group-level analysis or any advanced methods. Using the scripts requires at least a very basic knowledge of Matlab.
 
 
-## Why I chose FreeSurfer/FSFast over SPM/Brain Voyager/fsl
+## The code
+The guide accompanies the following scripts [available on GitHub](https://github.com/edden-gerber/fmri_analysis_pipeline_with_freesurfer):
+* **run_fsfast.m**: The main analysis script. The script is delimited into code sections which can be run separately, and encompasses all analysis steps from setting up basic configuration and running the freesurfer algorithm, through generating anatomical images and data structures, preprocessing and 1st level GLM.
+* **import_fsfast_results.m**: These are useful code sections that can be used to work with the results of the previous script: load and visualize 3D anatomical data, read functional scan data into Matlab, map data between different brain models, etc..
+* **read_gzip_nifti**: a small utility function to read zipped nifti files.
+
+
+The analysis pipeline requires Matlab and FreeSurfer, which runs in a Linux environment (some parts also require the freeware [MRIcron](https://people.cas.sc.edu/rorden/mricron/index.html)). If you are using Windows and need help in setting up a Linux virtual machine, [read  this section on setting up the environment and software](/setup_vm_for_fmri/).
+
+
+## Why you should chose FreeSurfer+FSFast over SPM, Brain Voyager or FSL
 This was mentioned in the previous guide but it's worth repeating here:
 
-1. I think surface registration is a _must_ for good group-level analysis of cortical activity. It also makes it possible to match subjects’ brains with external atlases which are formatted as template cortical surfaces.
-2. While the integration of FS with Matlab is not as easy as with SPM (which is already on Matlab), it is still simple enough (you can use my functions for importing data from FS into Matlab, displaying 3D brains, etc.).
-3. FS and FSFAST are pretty simple to implement (they do however seem to be a bit more “black-box” than the other open-source options, in the sense that looking at the results of intermediate stages of analysis is not always straightforward).
+1. Most importantly, I think the surface registration is a _must_ for good group-level analysis of cortical activity. It also makes it possible to match subjects’ brains with external atlases which are formatted as template cortical surfaces.
+2. FS and FSFAST are pretty simple to implement (they do however seem to be a bit more “black-box” than the other open-source options, in the sense that looking at the results of intermediate stages of analysis is not always straightforward).
+3. While the integration of FS with Matlab is not as easy as with SPM (which is already on Matlab), it is still simple enough (you can use my functions for importing data from FS into Matlab, displaying 3D brains, etc.).
+4. Once the pipeline is implemented as it currently is in an all-encapsulating Matlab script, modifying it for a new experiment is very easy and processing of each participant's data can be done smoothly with almost no manual or repetitive work (technically this could be done for other pipelines so wasn't a reason for me to initially choose this one, but it is a good reason to use this pipeline now that it exists).
 
 
 ## General outline and keeping your data organized
@@ -55,23 +63,25 @@ The general steps involved in this fMRI analysis pipeline are summarized in the 
 * Group level (or 2nd-level) analysis is the statistical analysis of your results (e.g. the subjects’ beta values or contrast t-values) across your subject sample.
 
 In working with this analysis pipeline and the provided scripts, you have three main options:
-1. Use the FSFast functionality up to and including first level analysis. This means that the final output will be cortical surface maps of beta-values (or t-values for contrasts) which you will read into Matlab (use the matlab function **XXX**) and apply group-level analysis or any other type of analysis yourself.
+1. Use the FSFast functionality up to and including first level analysis. This means that the final output will be cortical surface maps of beta-values (or t-values for contrasts) which you will read into Matlab and apply group-level analysis or any other type of analysis yourself.
 2. Use the FSFast functionality for the group-level analysis as well. This is not implemented in the scripts – you will just need to learn about the relevant commands from the documentation or recorded lectures and add them yourself.
-3. Use the FSFast functionality only up to the pre-processing step. This may be the case if you want to run the subject-level GLM yourself (if it is non-standard, or if you don’t want to use FSFast’s format for specifying the regression model). The **XXX** script will do this… XXX
+3. Use the FSFast functionality only up to the pre-processing step. This may be the case if you want to run the subject-level GLM yourself (if it is non-standard, or if you don’t want to use FSFast’s format for specifying the regression model).
 
-Another choice you will need to make is whether to use a common template cortical map for all your subjects or keep each subject’s individual anatomical brain morphology. The first option means that FreeSurfer’s surface registration (already applied to each subject in order to parcellate their cortical areas) will be used to map each subject’s functional data to a single common cortical template (the “fsaverage” template). This should be your choice if you plan to run group-level analysis on a voxel-level, since you will have a single cortical surface with all subjects’ functional data time course mapped to each node. This will allow you for example to produce a cortical map of group-level effect size. The second option is to analyze each subject’s functional data in relation to their own cortical surface. This avoids any co-registration errors because there is no need to map one brain to another. A common application of this approach is region-of-interest-based analysis – for each subject define anatomical or functional ROIs (e.g. V1, FFA), and run group-level analysis of measurements extracted from those, thus avoiding the need to compare single voxels directly. This approach is useful for functional ROI based analysis since functionally-defined areas may not necessarily align anatomically across subjects on the common template.
+Another choice you will need to make is whether to use a common template cortical map for all your subjects or keep each subject’s individual anatomical brain morphology:
+1. The first option means that FreeSurfer’s surface registration (already applied to each subject in order to parcellate their cortical areas) will be used to map each subject’s functional data to a single common cortical template (the “fsaverage” template). This should be your choice if you plan to run group-level analysis on a voxel-level, since you will have a single cortical surface with all subjects’ functional data time course mapped to each node. This will allow you for example to produce a cortical map of group-level effect size.
+2. The second option is to analyze each subject’s functional data in relation to their own cortical surface. This avoids any co-registration errors because there is no need to map one brain to another. A common application of this approach is region-of-interest-based analysis – for each subject define anatomical or functional ROIs (e.g. V1, FFA), and run group-level analysis of measurements extracted from those, thus avoiding the need to compare single voxels directly. This approach is useful for functional ROI based analysis since functionally-defined areas may not necessarily align anatomically across subjects on the common template.
 
 In the context of the _run_fsfast_ script, this choice will be reflected in how you configure your analysis in the “Create analysis configuration” code section (see below).
 
 
 ## Using the _run_fsfast_ script
-The script (available [here](...)) encapsulates the entire analysis pipeline after the anatomical and functional MRI images are downloaded from the scanner and placed in the experiment results folder. The script includes all analysis steps from anatomical scan processing up to 1st level analysis.
+The script encapsulates the entire analysis pipeline after the anatomical and functional MRI images are downloaded from the scanner and placed in the experiment results folder. The script includes all analysis steps from anatomical scan processing up to 1st level analysis.
 
 Since FreeSurfer is not a Matlab library but is meant to be run from a Linux shell, whenever the script calls a FreeSurfer command it uses the system function, which outputs a string to the operating system. And so for example the Matlab command system('freeview') on a linux OS will run the freeview command as if it was run from the shell command line.
 
 The script is divided into code sections (signified by “%%” in Matlab), which can be run separately (press Ctrl-Enter or the “Run Section” button). It is also possible to run the entire script at once without stopping, or call it from another script (for example within a loop that calls it for each subject).
 
-An overview of the code sections is as follows:
+### Explanation of _run_fsfast_'s code sections
 * **Set global parameters**: Define constants that are the same for all subjects, like the basic directory structure and software libraries paths.
 * **Set subject parameters**: Define subject-specific parameters. Subjects are defined with a subject ID. If a subject ID is not provided (e.g. from another script calling this one), you will be prompted to provide it.
 *	**Create subject folders and subjectname file and convert T1 DICOM to nifty**: This section will: 1. Create the folder structure for the new subject within the anatomy and fsfast analysis folders; 2. Create a subjectname file, a simple text file used by the FreeSurfer software; Convert the anatomical T1 scan from DICOM to nifty format (using the MRIcron software).
@@ -83,8 +93,8 @@ An overview of the code sections is as follows:
   2. An intensity-normalized scan (where all voxels of the same tissue type have the same intensity value)
   3. Separate images for the whole cortex and the left and right hemispheres after segmenting out the skull and subcortical structures (done by importing a cortical mask image and applying it to the whole-brain image).
 * **Read pial and inflated cortical surfaces from FreeSurfer format to Matlab**: FreeSurfer stores the left and right cortical surfaces in its own format, which is read into Matlab here as a “mesh” object using the read_surf function from FreeSurfer’s Matlab functions library. Two types of surface are imported – a pial surface representing the original shape of the cortical surface, and an inflated surface where the hemisphere is “inflated” such that sulci and gyri are eliminated (useful for visualization since no voxels are hidden within sulci; this code could in principle be expanded to also produce a flattened cortical surface). Importantly, this step also transforms the coordinate system from FreeSurfer’s specific surface coordinate system to a standard RAS (Right-Anterior-Superior) system. Along with the cortical mesh objects, metadata is also imported including parcellation into cortical areas, thickness and curvature of each surface node. All the information is saved within one Matlab data structure brain_data. The cortical surfaces can be visualized (along with any surface-mapped meta-data) using the [ECoG/fMRI Visualization Toolbox](/vis_toolbox/).
-* **Add retinotopic maps from external V1/V2/V3 atlas**: FreeSurfer’s parcellation scheme provides anatomical labels but not functional ones. The anatomically-based atlas of areas V1-3 by Benson et al.<sup>1,2</sup> is an alternative to running individual retinotopy scans on your subjects. It is based on FreeSurfer’s surface registration of the individual brain to a standard anatomical template, and the authors report that the method’s accuracy is similar to that of actual retinotopical measurement. The code section will add the visual area labels as another metadata layer to the brain_data Matlab data structure. You will need to have specified the path to the atlas data in the global parameters section. The relevant files can be found [here] (in R:\CommonResources\Tools\Anatomical Maps\Benson\Atlas).
-* An additional external Atlas that can be used is the probabilistic atlas described in: Wang, L., Mruczek, R., Arcaro, M., & Kastner, S. (2014). Probabilistic Maps of Visual Topography in Human Cortex. Cerebral Cortex, 1–21. However, this atlas was published as a SUMA-format surface, which was not implemented in this pipeline. Read about SUMA below to see what this means.
+* **Add retinotopic maps from external V1/V2/V3 atlas**: FreeSurfer’s parcellation scheme provides anatomical labels but not functional ones. The anatomically-based atlas of areas V1-3 by Benson et al.<sup>1,2</sup> is an alternative to running individual retinotopy scans on your subjects. It is based on FreeSurfer’s surface registration of the individual brain to a standard anatomical template, and the authors report that the method’s accuracy is similar to that of actual retinotopical measurement. The code section will add the visual area labels as another metadata layer to the brain_data Matlab data structure. You will need to have specified the path to the atlas data in the global parameters section. The relevant files can be found [here] (in R:\CommonResources\Tools\Anatomical Maps\Benson\Atlas).  
+An additional external Atlas that can be used is the probabilistic atlas described in: Wang, L., Mruczek, R., Arcaro, M., & Kastner, S. (2014). Probabilistic Maps of Visual Topography in Human Cortex. Cerebral Cortex, 1–21. However, this atlas was published as a SUMA-format surface, which was not implemented in this pipeline.
 * **Run pre-processing pipeline**: This code section simply runs the FSFast’s preprocessing command _preproc-sess_. This procedure applies (optionally) motion correction, slice timing correction, smoothing, intensity normalization, and brain-mask creation. Some of the steps are not run by default – see the command documentation online. If you have more than one analysis stream (e.g. localizer experiment and main experiment) you will need to run this command for each one. Each preprocessing step in FSFast produces a separate nifty-format data file, named as a concatenated string of labels indicating the applied processing steps. So for example fmcpr.down.sm4.my_subject.rh refers to right-hemisphere data from my_subject after motion correction, slice timing correction (with "down" slice order), and 4 mm smoothing.
 * **Create paradigm files**: This step is required if you want to apply FSFast’s first level GLM analysis to your experimental factors, and defines the regression model for these factors (i.e. which experimental conditions are active at each TR during the experiment). This is done by writing a text file that is saved in each scanning block’s folder. The script includes an example of how this is done for a visual category localizer scan.
 * **Create analysis configuration**: This runs the command that configures the 1st level analysis. Among other things, you need to decide whether your functional data will be mapped to the subject’s individual cortical surface or to another surface (e.g. the common fsaverage template). Read the mkanalysis-sess documentation for a full list of options. If you are using the same cortical surface for all your subjects, you don’t need to run this code section more than once.
@@ -100,7 +110,7 @@ An overview of the code sections is as follows:
 ## Using the _import_fsfast_results_ script
 This script contains several code sections that will be useful for working with the results of running the run_fsfast script. This script does not use FreeSurfer commands (only Matlab functions from the FreeSurfer library), and so can be run on any operating system.
 
-An overview of the code sections is as follows:
+### Explanation of _import_fsfast_results_'s code sections
 * **Set subject parameters**: Define where the subject data is stored.
 * **Load and visualize anatomical data**: This code section demonstrates how to use the brain_data structure generated using the run_fsfast script, to plot 3D cortical surfaces as well as color them according to voxel-mapped metadata. This is done using functions from the [ECoG/fMRI Visualization Toolbox](/vis_toolbox/)
 * **Read functional data - after preprocessing and before 1st level GLM**: This code section demonstrates how to read functional data produces by FSFast, after the preprocessing stage and before any 1st level analysis.
@@ -108,83 +118,3 @@ An overview of the code sections is as follows:
 * **Read 1st level GLM results**: This code section demonstrates how to read 1st level GLM results (e.g. beta values, contrast t-values etc.).
 * **Read head movement data**: Run this code to read the estimated head movements during the experiment (roll, pitch, yaw, and displacement on the x/y/z axis).
 * **Import 1st level GLM regressor structure**: If you ran a 1st level GLM analysis, you can use this code section to read into Matlab the full model generated for this analysis (i.e. the time course of each regressor).
-
-
-## Appendix: Setting up a Linux machine with the necessary software
-This is a guide to installing a virtual machine (VM) on Windows that will run the Linux operating system. The virtual machine part is detailed simply because that was required for me as we used Windows machines in our lab and a dedicated separate machine was too inconvenient. If you have a linux machine you can ignore the parts about setting up the virtual environment.
-
-
-### Setup virtual machine
-1. Install a VM virtualization software. I used the Oracle VM VirtualBox: https://www.virtualbox.org/wiki/Downloads. The instructions here will refer to this software.
-2. Select or download a Linux distribution. I used the CentOS distribution (http://www.centos.org/download) because it was the only one on which I managed to install the BioImage Suite software (not part of this pipeline; used for marking intracranial electrode locations on a 3D brain as part of my ECoG pipeline).
-3. Create the VM:
-  * In Virtual Box, create a new Linux virtual machine:
-  * Give it a name, and select "Linux" and "Other Linux" (assuming you're using a distribution you downloaded; 32 or 64 bit depending on your system).
-  * Give it at least 1024MB RAM (I gave it 4MB out of my available 8GB).
-  * Create a virtual hard drive (VDI) - you need to give it enough memory space for all the necessary software packages (it is complicated to add additional space once the machine is created) and data. This includes more or less 20GB for software (counted as everything but the /home directory on my machine), plus the size of all shared folders, plus the FreeSurfer subjects folder, which takes up about 1.3GB for every analyzed subject. Before you do this, make sure the virtual disk is stored where you can spare the space. You can set this at File->Preferences->General->Default machine folder.
-    * Right-click -> settings:
-    *	General- > Advanced -> set "shared clipboard" and "drag'n'drop" to "bidirectional.
-    *	Display -> 64MB Video RAM (with 32MB, the brain images did not display).
-    *	Display -> check Enable 3D acceleration
-    *	Storage -> Under Controller: IDE, select the CD ROM icon, then click the small CD ROM icon on the right and find the downloaded ISO file.
-    *	Shared Folders -> Add any needed folders (select "auto-mount" and "make permanent" - not sure if this is necessary)  
-  *	Start the virtual machine and begin the installation. If at any time the disk is "ejected", it can be re-inserted from the menu bar; Devices->CD/DVD Devices.  
-  *	You can skip the "media test".  
-  *	Select a root password and make sure you do not forget it. You can use "humancognitive".  
-  *	Select "Use All Space"  
-  *	Selecting an installation configuration: "Desktop" is fine. Once the installation is done, restart and finish the setup. Select a user name and password.  
-  *	You don't need to enable "kdump". When asked whether to reboot click "Yes".  
-  * Until you complete the "Install Virtual Box Guest Additions" section (see below), you will not be able to copy/paste between the host and the virtual machine, or increase the virtual machine's screen resolution.  
-4. Once the virtual machine is running:  
-  *	To enable internet access: Click the network icon in the top bar and select an available network connection (this is necessary for the upcoming updates and downloads).  
-  * Enable "super-user" for your user:   
-    Open a terminal and enter:  
-    <span style="font-family:monospace;"> su - </span>  
-    <<enter root password in prompt>>  
-    <span style="font-family:monospace;"> echo '<<user_name>> ALL=(ALL) ALL' >> /etc/sudoers </span>  
-    Where <<user_name>> is your user name  
-    Type <span style="font-family:monospace;"> 'exit' </span> to switch out of the root user or close the terminal.  
-  *	Update system  
-    Open a terminal and type:  
-    <span style="font-family:monospace;">sudo yum update</span>  
-    (this will take a while)  
-    *	Install Virtual Box Guest Additions  
-    Open a terminal and enter:  
-    <span style="font-family:monospace;">sudo yum install gcc</span>  
-    And:  
-    <span style="font-family:monospace;">sudo yum groupinstall "Development Tools" </span>  
-    reboot  
-    After booting up (remember to activate the network connection again…) -  
-    On the top menu, click Devices -> Insert Guest Additions CD Image, and run the installation.  
-    Right-click on the desktop icon for the CD Drive and select 'Eject'.  
-    Power off and restart the virtual machine.  
-    * Give access permissions to the shared folders  
-    Create a new folder for each shared folder where you want it to be, for example ~/shared_folders/<shared_folder_name> (~ = /home/[user]). Use either the file browser or from the terminal:   <br>
-    <span style="font-family:monospace;">  mkdir ~/shared_folders/ </span>   <br>
-    <span style="font-family:monospace;">  mkdir ~/shared_folders/[shared_folder_name] </span>   <br>
-    Now enter in a terminal:  <br>
-    <span style="font-family:monospace;">sudo mount -t vboxsf -o uid=1000,gid=1000,rw [shared_folder_id] [target_drive_location] </span>   <br>
-    Where [shared_folder_id] is the name you gave the folder when you defined it in the Virtual Box program, and [target_drive_location] is the path of the folder you just created.   <br>
-    You need to do this for every shared folder separately. If you don't remember the ID's you gave to the shared folders, look at Settings->Shared Folders in VirtualBox again or look at the contents of /media (but disregard the "sf_" prefix).  <br>
-    You can subsequently add a shortcut to these folders from other locations, using:  <br>
-    <span style="font-family:monospace;">ln -s [shared folder location] [shortcut location] </span>  <br>
-    NOTE: Unfortunately this procedure is not preserved after restarting the machine (the mounting), so it's necessary to do this every time. To make this less inconvenient, my solution was to add a desktop shortcut to run this command. Here is how:  <br>
-    Create a text file somewhere and give it an appropriate name, for example: ~/Documents/scripts/mount_shared_folders  <br>
-    Open this file and enter the following lines:  <br>
-    <span style="font-family:monospace;"> #!/bin/sh </span>  <br>
-    <span style="font-family:monospace;"> [mount command] </span> <br>
-    Where [mount command] is the same as above (sudo mount -t … ).  
-    Now right-click on the desktop and select "Create Launcher". For Type select "Application in Terminal", for Name give it a name (like "mount shared folders"), and for Command enter:  <br>
-    <span style="font-family:monospace;"> sh [path] </span>  <br>
-    Where [path] is the full path of the script you created. When you run this launcher, it will open a terminal and run the script, asking you for the root password and activating the mount.  
-
-
-### Required software
-* **FreeSurfer**: Great tool that segments the brain and converts it to a cortical surface (which can be registered to a standard surface).
-Follow download, installation, registration and configuration instructions on [http://freesurfer.net](http://freesurfer.net). It takes a few steps but it's quite straightforward.
-One additional step that I needed to make: by default, FreeSurfer is installed to /usr/local. This means you will need root permissions to edit the files there. This is a minor nuisance during installation, for example when you need to create the license.txt file (but getting over this difficulty is part of learning to use basic Linux, so deal with it). However it's more of a problem when you actually run FS since the Subjects folder, to which all results are written is by default under the same folder (/usr/local/freesurfer/subjects). What I did is to edit the SUBJECTS_DIR variable in /usr/local/freesurfer/SetUpFreeSurfer.sh from the default value to my home folder.
-Another minor point - for some reason a lot of the files produced by the freesurfer analysis are marked as hidden files - if you can't find a file try showing hidden files.
-FreeSurfer citation information: [https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferMethodsCitation](https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferMethodsCitation).
-* **MRIcron**:  A small and very handy utility for displaying f/MRI/CT images. Does not have a "3D volume" display, but is useful for showing several overlaid images (for example when testing the results of white/gray matter segmentation or brain surface generation). It's also used for converting MRI images from DICOM to NIFTI format.
-Download: [https://people.cas.sc.edu/rorden/mricron/install.html](https://people.cas.sc.edu/rorden/mricron/install.html)
-* **Matlab**: You will need Matlab to run the analysis scripts. Add the FreeSurfer Matlab folder to your path: it's in <FreeSurfer Home Directory>/matlab

@@ -1,7 +1,7 @@
 ---
 title: "MATLAB code template for a visual EEG experiment"
 permalink: /eeg_exp_template/
-date: 2019-10-11
+date: 2019-10-12
 share: true
 excerpt: "MATLAB code template for a visual EEG experiment"
 header:

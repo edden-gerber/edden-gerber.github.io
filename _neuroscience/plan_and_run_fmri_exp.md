@@ -1,7 +1,7 @@
 ---
 title: "How to plan and run an fMRI experiment"
 permalink: /plan_and_run_fmri_exp/
-date: 2019-10-11
+date: 2019-10-10
 share: true
 excerpt: "My A-to-Z guide to planning and running an fMRI experiment"
 header:
@@ -14,11 +14,19 @@ toc_sticky: true
 When I was running my first fMRI experiment after several EEG/iEEG experiments, I did so in a lab that did not have any established workflow or recent experience with this modality. This meant that I had to learn and get everything set up from scratch - a good opportunity to pave the way as I was going.
 The following guide (and the accompanying [How to analyze fMRI data with FreeSurfer and FSFast](/analyze_fmri_data/) has been written for this purpose. I have revised this web version to be as useful as possible for anyone out there starting out with fMRI.
 
-The guide is accompanied by several supporting files:
-* [Example visual fMRI experiment (with eye-tracking), MATLAB](...)
-* [Example experiment protocol] (...)
-* [Example experiment checklist](...)
-* [Example subject briefing checklist](...)
+The guide is accompanied by several supporting files [available on GitHub](https://github.com/edden-gerber/fmri-experiment-bundle):
+* **Experiment checklist example**
+* **Experiment protocol example**
+* **Participant briefing checklist example**
+* **Code for example visual fMRI experiment (with eye-tracking)**: Written in Matlab using PsychToolBox. You can modify this code to create your own experiment or better understand how to build one. Includes the following files:
+  * _visual_fMRI_exp_with_EyeLink.m_: experiment code
+  * _exp_codes.mat_: example experiment trial conditions data
+  * _Generate_Trial_Lists.m_: code to generate _exp_codes_
+  * _instructions_eng.txt_: experiment instructions text
+  * _Stimuli_ folder: stimulus images used by the experiment.  
+
+  The experiment uses a slow event-related visual paradigm. In each 34.5 sec trial, an image of a face or a house appears for 9 or 15 seconds. The participant needs to focus on a central fixation cross present throughout the trial, and respond with a button press in rare occasions when it briefly changes shape (from "+" to "-"). Yes, this is an excruciatingly boring experiment.
+
 
 ## Issues to consider when designing your experiment
 
@@ -40,17 +48,17 @@ You can find example Matlab code for a visual fMRI experiment [here](...).
 
 
 ## Preparing for the experiment
-Prepare an experiment checklist containing everything that has to be done – from the day before to the closing details. An example checklist can be found [here](...).
+Prepare an experiment checklist containing everything that has to be done – from the day before to the closing details. An example checklist can be found [here](https://github.com/edden-gerber/fmri-experiment-bundle/blob/master/Experiment%20checklist%20example.docx).
 
-Prepare an experiment protocol listing all the experiment blocks. During the experiment, mark each block as you run it and add comments if necessary. You can find an example protocol [here](...).
+Prepare an experiment protocol listing all the experiment blocks. During the experiment, mark each block as you run it and add comments if necessary. You can find an example protocol [here](https://github.com/edden-gerber/fmri-experiment-bundle/blob/master/Experiment%20protocol%20example.docx).
 
-Prepare a summary or checklist of the initial briefing of the subject. This should include the explanation of the experiment, safety issues, general requests (like to minimize head movement), and anything else you want to say before the experiment. Try to have the briefing scripted such that it will be carried out identically across subjects. You can find an example [here](...)
+Prepare a summary or checklist of the initial briefing of the subject. This should include the explanation of the experiment, safety issues, general requests (like to minimize head movement), and anything else you want to say before the experiment. Try to have the briefing scripted such that it will be carried out identically across subjects. You can find an example [here](https://github.com/edden-gerber/fmri-experiment-bundle/blob/master/Briefing%20example.docx)
 
 ## Recruiting participants
 In my experience it is relatively easy to find participants given both the high payment for fMRI experiments (at least in my university), and the interest that many people have in this experience. I found three good ways to recruit subjects:
 1. Ask other grad students – they owe you because you already participated in their experiments, and they tend to be good participants. In particular you can ask them to do your pilot runs, as they will be more forgiving when things are not yet running smoothly.
 2. Use other people’s subject lists. People who have already participated in an experiment (and behaved well enough) are a good bet because they were screened and know what to expect. Ask your own participants whether they agree to be kept on file for future experiments.
-3. Post a recruitment message on social media - such as a local FaceBook group with a lot of members (I used my neighborhood's group). You may receive a very large number of responses so avoid corresponding with private messages but rather direct people to an online form that will contain more detailed information and record their information (some basic demographics, contact information, languages, previous experience with MRI, availability etc.) that will help you decide who to contact. You need to explicitly specify on the form that the provided data will be stored online (e.g., on your Google Drive).
+3. Post a recruitment message on social media - such as a local Facebook group (I used my neighborhood's group). You may receive a very large number of responses so avoid corresponding with private messages but rather direct people to an online form that will contain more detailed information and record their information (some basic demographics, contact information, languages, previous experience with MRI, availability etc.) that will help you decide who to contact. You need to explicitly specify on the form that the provided data will be stored online (e.g., on your Google Drive).
 
 
 ## Communicating with participants before the experiment
@@ -74,8 +82,9 @@ Below is a quick summary table adopted from a [blog post](https://computingforps
 
 You should choose the analysis method that’s best for your needs and capabilities. My personal choice was to use FreeSurfer and FSFAST, integrated with Matlab. This is because:
 
-1. I think surface registration is a _must_ for good group-level analysis of cortical activity. It also makes it possible to match subjects’ brains with external atlases which are formatted as template cortical surfaces.
-2. While the integration of FS with Matlab is not as easy as with SPM (which is already on Matlab), it is still simple enough (you can use my functions for importing data from FS into Matlab, displaying 3D brains, etc.).
-3. FS and FSFAST are pretty simple to implement (they do however seem to be a bit more “black-box” than the other open-source options, in the sense that looking at the results of intermediate stages of analysis is not always straightforward).
+1. Most importantly, I think the surface registration is a _must_ for good group-level analysis of cortical activity. It also makes it possible to match subjects’ brains with external atlases which are formatted as template cortical surfaces.
+2. FS and FSFAST are pretty simple to implement (they do however seem to be a bit more “black-box” than the other open-source options, in the sense that looking at the results of intermediate stages of analysis is not always straightforward).
+3. While the integration of FS with Matlab is not as easy as with SPM (which is already on Matlab), it is still simple enough (you can use my functions for importing data from FS into Matlab, displaying 3D brains, etc.).
+4. Once the pipeline is implemented as it currently is in an all-encapsulating Matlab script, modifying it for a new experiment is very easy and processing of each participant's data can be done smoothly with almost no manual or repetitive work (technically this could be done for other pipelines so wasn't a reason for me to initially choose this one, but it is a good reason to use this pipeline now that it exists).
 
 Consult [this post](/analyze_fmri_data/) for a guide on FreeSurfer/FSFast/Matlab analysis of fMRI data. The accompanied script runs entirely on Matlab, and calls FreeSurfer shell functions using the “system” command (which outputs commands to the operating system; you can only run this script on a Linux machine or virtual machine with FreeSurfer installed). It includes all of the analysis steps from the anatomical processing and importing of the DICOM files, through functional pre-processing and up to the first-level GLM analysis (In my case the group-level analysis was done with separate Matlab code). While the FreeSurfer wiki includes some basic documentation, anyone using FSFAST should watch the [tutorial lecture](https://www.youtube.com/watch?v=Q1RoThGmuxk) on the FreeSurfer YouTube channel which gives a complete overview of how to use this tool.
