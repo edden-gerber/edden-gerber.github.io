@@ -14,13 +14,13 @@ If I say I'm 50 km from your location, would you be able to guess where I am?
 
 This question came up as I was chatting with someone on a popular dating app. This app like others of its kind is based on users' location, and so displays the distance of potential matches from your location. This particular person happened to be traveling for work about 2800 km away at the time, and as I tried to guess where they were visiting, I occurred to me that a bit of data and coding can make this game much easier.
 
-This turned out to be a very entertaining one-day project, that had me looking into world population data, sphere geometry, google maps API, and even signal processing. This is the idea: given that a person is located in unknown coordinates on Earth _(lat<sub>2</sub>, long<sub>2</sub>)_ but with known distance from a location _(lat<sub>1</sub>, long<sub>1</sub>)_, how can we best guess _(lat<sub>2</sub>, long<sub>2</sub>)_? My approach was to use world population density data, and assign probabilities to locations based on this density. Of course, depending on the circumstances there could be many other ways to narrow down the possibilities (for example, I could know the other person's nationality, reason for traveling etc.), but since in the context of this pet project I only used population data, I'm effectively making the assumption that I have no such knowledge and that the person is randomly sampled from the Earth population. In the final notes I'll get to how to how to possibly go beyond this simplification.
+This turned out to be a very entertaining one-day project, that had me looking into world population data, sphere geometry, google maps API, and even signal processing. This is the idea: given that a person is located in unknown coordinates on Earth _(lat<sub>2</sub>, long<sub>2</sub>)_ but with known distance from a location _(lat<sub>1</sub>, long<sub>1</sub>)_, how can we best guess _(lat<sub>2</sub>, long<sub>2</sub>)_? My approach was to use world population density data, and assign probabilities to locations based on this density.
 
 ## First stop: NASA
 
-First we need some data. I ended up on [NASA's Socioeconomic Data and Applications Center (SEDAC)](https://sedac.ciesin.columbia.edu/) website, where I found the Gridded Population of the World (GPW) v4.11 data set ([download here](https://sedac.ciesin.columbia.edu/data/set/gpw-v4-population-density-rev11/data-download), free registration required). Several resolutions are available - a 2.5 Minute (~5km) grid seemed good enough to me without having to deal with too large of a dataset.
+First we need some data. I ended up on [NASA's Socioeconomic Data and Applications Center (SEDAC)](https://sedac.ciesin.columbia.edu/) website, where I found the Gridded Population of the World (GPW) v4.11 data set ([download here](https://sedac.ciesin.columbia.edu/data/set/gpw-v4-population-density-rev11/data-download), free registration required). Several resolutions are available - a 2.5 Minute (~5km) grid seemed good enough to me without having to deal with a heavy dataset.
 
-This in an ASCII file containing 4320 rows and 8640 columns of numbers, corresponding to population density estimates for a square grid covering the Earth's surface (180&deg of latitude and 360%deg of longitude in steps of 2.5 Minutes, or 0.04167%deg). It also contains six header lines. Non-land locations are coded as -9999, which we'll replace with NaN (I'm using Python; I place import commands where they are first required for clarity).
+This in an ASCII file containing 4320 rows and 8640 columns of numbers, corresponding to population density estimates for a square grid covering the Earth's surface (180&deg; of latitude and 360&deg; of longitude in steps of 2.5 Minutes, or 0.04167&deg;). It also contains six header lines. Non-land locations are coded as -9999, which we'll replace with NaN (I'm using Python; import commands are placed where they are first required for clarity).
 
 ```python
 import numpy as np
@@ -37,11 +37,11 @@ with open(data_path) as f:
 data[data==-9999]=np.nan
 ```
 
-Our strategy would be to provide a center location _(lat<sub>1</sub>, long<sub>1</sub>)_ and distance _d_, retrieve all population density grid entries that fall on the corresponding circle, and derive probabilities for discrete location names - the latter using Google Maps' API to translate coordinates to rich location data.
+Our strategy would be to provide a center location and distance, retrieve all population density grid entries that fall on the corresponding circle, and derive probabilities for discrete location names - using Google Maps' API to translate coordinates to rich location data.
 
 ## Doing the math
 
-This is where I ran into the first challenge: on a spherical coordinate system, how do we compute the set of coordinates that make up our circle of equidistant points? After a very short attempt with pen and paper and trying to recall that most useless of high school subjects, trigonometry, I quickly realized that this is not a simple problem. Not simple, of course, only in the sense that it means I had to [look up the formulas online](https://www.movable-type.co.uk/scripts/latlong.html) rather than figure it all out myself. So here is a function that translates a center point, distance and angle to the corresponding target coordinate on the circle circumference:
+This is where I ran into the first challenge: on a spherical coordinate system, how do we compute the set of coordinates that make up our circle of equidistant points? After a very short attempt with pen and paper and trying to recall some trigonometry, that most useless of high school subjects, I quickly realized that this is not a simple problem. Not simple, of course, only in the sense that it means I had to [look up the formulas online](https://www.movable-type.co.uk/scripts/latlong.html) rather than figure it all out myself. So here is a function that translates a center point, distance and angle to the corresponding target coordinate on the circle circumference:
 
 ```python
 import math
@@ -87,7 +87,7 @@ def index_to_coord(row_idx, col_idx, data_size):
     return latitude, longitude
 ```
 
-Now we can choose _(lat<sub>1</sub>, long<sub>1</sub>)_ and _d_ and sample our circle - but how many points to sample? Obviously, we gain nothing by sampling with higher resolution than that of the dataset, so my quick-and-dirty solution was to select the maximal resolution that samples each entry on the circle at least once, which is simply _np.max(data.shape)_ (corresponding to the number of grid squares on the maximal circumference possible, e.g. the equator).
+Now we can define a center point and distance and sample our circle. But how many points to sample? Obviously, we gain nothing by sampling with higher resolution than that of the dataset, so my quick-and-dirty solution was to select the maximal resolution that samples each entry on the circle at least once, which is simply _np.max(data.shape)_ (corresponding to the number of grid squares on the maximal circumference possible, e.g. the equator).
 Let's use the parameters from the case I started with - a distance of 2850km from my (approximate) location in Jaffa, Israel:
 
 ```python
@@ -115,7 +115,7 @@ pop_density[np.isnan(pop_density)] = 0
 ## It's map time
 
 With a set of coordinates and population density values, we are ready to plot our preliminary results on a map!
-We'll handle this aspect using the gmaps and geopy libraries. Note that to access Gmap's API, we need to generate an API key. I already had a Google Cloud account so doing this was simple using [these instructions](https://developers.google.com/maps/documentation/embed/get-api-key). Make sure you get your own key if you want to run this code yourself.
+We'll handle this aspect using the _gmaps_ and _geopy_ libraries. Note that to access Gmap's API, we need to generate an API key. I already had a Google Cloud account so doing this was simple using [these instructions](https://developers.google.com/maps/documentation/embed/get-api-key). Make sure you get your own key if you want to run this code yourself.
 This is what we need to set up:
 
 ```python
@@ -126,7 +126,7 @@ API_KEY = '<my key...>'
 gmaps.configure(api_key=API_KEY)
 geocoder = geopy.geocoders.GoogleV3(api_key=API_KEY)
 ```
-I also had to run this to enable the Google maps to display within my Jupyter Notebook (required a computer restart)
+I also had to run this to enable the Google maps to display within my Jupyter Notebook (required a computer restart).
 
 ```python
 !jupyter nbextension enable --py --sys-prefix widgetsnbextension
@@ -145,15 +145,16 @@ fig
 ```
 
 ...And here we are!
+
 ![circle around location](../assets/images/guess_location/2850_km_circle.png "So far so good")
 
 ## Smoothing out the details
 
-Our next task is to take this array and translate it into a list of probabilities for possible discrete locations. We need to define what we mean by "location", so let's say our desired resolution is city-level (which is suitable given our ~5km grid resolution). Ideally, we could extract (using the geopy library) the country-city label for each point on our circle, add up the population density values belonging to each unique label, and divide each by the total density across the array to get a probability between 0 and 1. This is because if a city is large enough to comprise several samples, the probability to be in this city should be the sum of the probabilities of being in each of its sampled points.
+Our next task is to take this array and translate it into a list of probabilities for possible discrete locations. We need to define what we mean by "location", so let's say our desired resolution is city-level (which is suitable given our ~5km grid resolution). Ideally, we could extract (using the geopy library) the country/city label for each point on our circle, add up the population density values belonging to each unique location, and divide each by the total density across the array to get a probability between 0 and 1. This is because if a city is large enough to span several samples, the probability to be in this city should be the sum of the probabilities of being in each of its sampled points.
 
 However, we run into a technical issue here - the Google Maps API doesn't seem to to like it when we send thousands of location data requests at the same time. Despite some attempts to go around this, I just ended up getting a 'Service timed out' error each time. Instead then, let's take another approach.
 
-Rather than integrating across all locations along the circle, we can look just at peaks of population density. This of course changes what we are effectively looking for (e.g. we will not be sensitive to sparsely-populated but very large locations), but it should be good enough to work. To start with, let's look at what we are working with:
+Rather than integrating across all locations along the circle, we can look just at peaks of population density. This of course changes what we are effectively looking for (e.g. we will not be sensitive to large but sparsely-populated locations), but it should be good enough. To start with, let's look at what we are working with:
 
 ```python
 import matplotlib.pyplot as plt
@@ -170,9 +171,9 @@ plt.title('Population density across the circle', size=20);```
 
 ![unfiltered signal](../assets/images/guess_location/unfiltered signal.png "Space series")
 
-So - what we have here is a time series - or rather a space series if you will. We can see the peak clusters that correspond to the blobs in Russia, Ethiopia and North-Africa-Europe in the map above (angle 0 is right above the center). With my background of analyzing biological time series data in my PhD, I will right at home here... I also know that I can't just run a peak-finding function on this series, since it is very non-smooth and so there are peaks everywhere - in the sense of samples that are simply higher than their immediate neighbors.
+So what we have here is a time series - or rather a space series if you will. We can see the peak clusters that correspond to the blobs in Russia, Ethiopia and Europe in the map above (angle 0 is right above the center). With my scientific background analyzing biological time series data, I feel right at home here... I also know that I can't just run a peak-finding function on this series, since it is very non-smooth and so there are peaks everywhere - in the sense of samples that are simply higher than their immediate neighbors.
 
-Let's see this happening (and zoom in for clarity)
+Let's see this happening (and zoom in for clarity):
 
 ```python
 from scipy import signal # this library has the find_peaks function
@@ -196,7 +197,7 @@ _find_peaks_ has parameters we can play with to narrow down the results, like mi
 
 What kind of filter to use? Common filters used in signal processing such as the Butterworth or Chebychev filters are good if you care about the precise frequency spectrum of your output, but they pay for that by introducing some distortions (e.g. "ringing" around square waves) that we want to avoid (as they may create artificial peaks). A simple Gaussian filter is probably the best option in our case.
 
-We just need to select one parameter - the standard deviation (width) of our Gaussian, corresponding to the degree of smoothing. A width of 5km makes sense and seems to generate good results - let's compare the signals and detected peaks before and after filtering (again zooming in, and let's also add a minimal height criterion to find_peaks to get rid of very low peaks):
+We need to select one parameter - the standard deviation (width) of our Gaussian, corresponding to the degree of smoothing. A width of 5km makes sense and seems to generate good results - let's compare the signals and detected peaks before and after filtering (again zooming in, and let's also add a minimal height criterion to find_peaks to get rid of very low peaks):
 
 ```python
 from scipy import ndimage # the gaussian filter is part of the image processing library
@@ -244,7 +245,7 @@ plt.title('Peaks in population density', size=20);
 
 ## Going local
 
-Okay, that was fun but we still have the main part of the algorithm ahead of us. Next we need to extract the location information from each peak's coordinates. For this we'll need these two functions that extract country and city (coded as by Google "locality" as not every place is within a city) from the gmap data structure.
+Okay, that was fun but we still have the main part of the algorithm ahead of us. Next we need to extract the location information from each peak's coordinates. For this we'll need the following functions that extract country and city (coded as by Google "locality" as not every place is within a city) from the gmap data structure.
 
 ```python
 def get_country(Location):
@@ -337,7 +338,7 @@ But what if they happened to be a bit further away, say in Brussels, Belgium (32
 
 ![3245km results](../assets/images/guess_location/results_karachi.png "showing only first two countries")
 
-This would of course be wrong if the other person was an Israeli citizen like myself, implying a strong prior probability against Karachi. So on a final note, how could we take this little project further if we wanted it to take advantage of additional knowledge that we may have? One idea that comes up is to use international travel statistics - what is the volume of travel between pairs of countries - and generating from it a probability prior (assuming of course that we know the target individual's nationality). Of course, having two or more sets of probabilities means that I need to decide how to weigh them. I could try to learn these weights or even use a more complex prediction model using each set as a feature - though this would make it a supervised learning problem requiring labeled data of people's distances and locations.
+This would of course be wrong if the other person was an Israeli citizen like myself, implying a strong prior probability against Karachi. So on a final note, how could we take this little project further if we wanted it to take advantage of additional knowledge that we may have? One idea that comes up is to use international travel statistics - what is the volume of travel between pairs of countries - and generating from it a probability prior (assuming of course that we know the target individual's nationality). Of course, having two or more sets of probabilities means that I need to decide how to weigh them. I could try to learn these weights or even use a more complex prediction model using each set as a feature - though this would make it a supervised learning problem requiring labeled data of people's distances and locations. In other words, it's doable but somebody will have to pay me for it :)
 
 ## To sum up
 

@@ -10,3 +10,5 @@ header:
 toc: true
 toc_sticky: true
 ---
+
+The following guide has been written following my experience of running my fMRI experiment in a lab that did not have any established pipeline 
