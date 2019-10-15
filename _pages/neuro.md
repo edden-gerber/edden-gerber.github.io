@@ -20,6 +20,10 @@ My complete guide to planning and running an fMRI experiment (with Matlab experi
 [![img](../assets/images/neuro/fmri_header-2.png)](/analyze_fmri_data/)
 My complete guide to analyzing and visualizing fMRI data using FreeSurfer and FSFast (with analysis pipeline code template).
 
+## Code template for a visual EEG experiment (MATLAB)
+[![img](../assets/images/neuro/eeg_exp_header.png)](/eeg_exp_template/)
+A Matlab code template for a visual EEG experiment with (optional) eye-tracker.
+
 ## Functions for time series analysis and statistics (MATLAB)
 [![img](../assets/images/neuro/eeg_analysis_header.png)](/eeg_functions/)
 A wide array of Matlab functions, focused on EEG analysis but should be widely applicable. Include functions for plotting, testing, manipulating and generating data.
