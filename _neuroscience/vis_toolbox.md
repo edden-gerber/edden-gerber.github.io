@@ -16,7 +16,7 @@ demo script and data to get you quickly familiarized with it. All functions incl
 
 The toolbox is available on [github](https://github.com/edden-gerber/ecog_fmri_visualization_matlab) and [Mathworks File Exchange](https://www.mathworks.com/matlabcentral/fileexchange/71634-anatomical-data-visualization-toolfbox-for-fmri-ecog)
 
-## Main functions:
+## Main functions
 
 plot_mesh_brain: reads a mesh object (structure defined with cortices and faces) and plots it as a 3D patch object with graphical properties suitable for the presentation of cortical surfaces.
 
@@ -25,7 +25,7 @@ plot_data_on_mesh: plots data on the brain patch object, either by coloring its 
 paint_mesh: a simpler function to paint all or part of the mesh surface. This function is called by plot_data_on_mesh, but for fmri-type data it is probably more suitable as it requires less tuning of the input arguments.
 
 
-## Additional functions:
+## Additional functions
 
 read_freesurfer_brain: this is a function which can be used on machines which have FreeSurfer installed to import cortical surfaces from brain scans which have been processed by FreeSurfer into Matlab.
 
@@ -34,12 +34,12 @@ fix_lighting: this is a simple function which corrects the angle of lighting to 
 pull_3d_scatter_dots: this function "pulls" scatter plot objects toward the viewing angle. This is useful since markers plotted directly on the cortical surface are often "submerged" in it.
 
 
-## Demo script:
+## Demo script
 
 Open "demo_script.m" and run it cell-by-cell or line-by-line to get familiarized with the above functions.
 
 
-## Copyright and citation:
+## Copyright and citation
 
 Toolbox written by Edden M. Gerber, lab of Leon Deouell, Hebrew University of Jerusalem 2015.
 
@@ -51,5 +51,5 @@ Thanks to Tal Golan for theoretical and technical assistance.
 There is no citation currently associated with this toolbox, but if you are using it please let me know at edden.gerber@gmail.com. Also please feel free to send feedback, bug reports etc.
 
 
-## Bugs and issues:
+## Bugs and issues
 There are some issues related to changes in the color scheme of scatter plot objects when surfaces are painted. This is a problem with the external "FreezeColors" function. To avoid this issue it is best to paint surfaces before adding a scatter plot.
