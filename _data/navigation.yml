@@ -1,7 +1,9 @@
 # main links
 main:
-  - title: "Posts"
+  - title: "Data Science"
     url: /posts/
+  - title: "Neuroscience"
+    url: /neuro/
   - title: "About Me"
     url: /about/
 
