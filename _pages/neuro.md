@@ -1,6 +1,8 @@
 ---
 title: "Neuroscience"
 permalink: /neuro/
+toc: true
+toc_sticky: true
 ---
 
 My research at Leon Deouell's [Human Cognitive Neuroscience Lab](https://www.hcnl.org/) was about how the human visual cortex represents visual stimuli over sustained periods of time. The links below contain a selection of guides, tools, functions and analysis pipelines that I developed over the course of my PhD.
