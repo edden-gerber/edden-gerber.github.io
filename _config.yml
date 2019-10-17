@@ -133,7 +133,7 @@ author:
       url: "https://www.linkedin.com/in/edden-gerber-05a7495/"
     - label: " CV"
       icon: "far fa-file-pdf"
-      url: "{{site.url}}/assets/files/CV Edden Gerber.pdf"
+      url: "../download/CV Edden Gerber.pdf"
     # - label: "Instagram"
       # icon: "fab fa-fw fa-instagram"
       # url: "https://instagram.com/"
