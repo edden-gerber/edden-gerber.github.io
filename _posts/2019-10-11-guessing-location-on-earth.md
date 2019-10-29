@@ -1,5 +1,5 @@
 ---
-title: "Guessing someone's location on earth based on their distance"
+title: "Guessing Someone's Location On Earth Based On Their Distance"
 date: 2019-10-11
 share: true
 excerpt: "A small project encompassing population data, geometry, signal processing and Google Maps API"
@@ -26,15 +26,8 @@ This in an ASCII file containing 4320 rows and 8640 columns of numbers, correspo
 import numpy as np
 
 # Read global population density data
-data_path = 'data\gpw_v4_population_count_rev11_2020_2pt5_min.asc'
-
-data = np.zeros([4320,8640])
-with open(data_path) as f:
-    for i, line in enumerate(f):
-        if i>6:
-            data[i-7,:] = np.array([float(num) for num in line.split()])
-
-data[data==-9999]=np.nan
+data_path = 'data\gpw-v4-population-count-rev11_2020_2pt5_min_asc\gpw_v4_population_count_rev11_2020_2pt5_min.asc'
+data = pd.read_csv(data_path, skiprows=6, sep=' ', header=None, usecols=np.arange(8640), na_values=-9999)
 ```
 
 Our strategy would be to provide a center location and distance, retrieve all population density grid entries that fall on the corresponding circle, and derive probabilities for discrete location names - using Google Maps' API to translate coordinates to rich location data.
@@ -106,7 +99,7 @@ for idx, angle in enumerate(np.linspace(0, 360-(360/n_samples), num=n_samples)):
     target = target_coord(center, angle, distance)
     locations[idx] = target
     row_idx, col_idx = coord_to_index(target[0],target[1], data.shape)
-    pop_density[idx] = data[row_idx, col_idx]
+    pop_density[idx] = data[col_idx][row_idx]
 
 # handle NaNs
 pop_density[np.isnan(pop_density)] = 0

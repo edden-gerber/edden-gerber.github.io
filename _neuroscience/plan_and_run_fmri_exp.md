@@ -44,7 +44,7 @@ You can write the experiment itself using any tool that is used in your lab. The
 
 Since TRs are very far from instantaneous, make sure that you time events correctly relative to the beginning or end of each TR (e.g., a trial with n TRs starts at TR 1, but ends not at TR n but at the beginning of n+1; there is a big difference between waiting for a TR and then executing the trial, and executing the trial and then waiting for the next TR). Take special care if you use pauses in your code (for example when waiting while displaying a stimulus for a specific duration) if that could lead you to miss TR triggers. In any case, always test your experiment extensively, under as realistic conditions as possible, before running your first scan.
 
-You can find example Matlab code for a visual fMRI experiment [here](...).
+You can find example Matlab code for a visual fMRI experiment [here](https://github.com/edden-gerber/fmri-experiment-bundle/tree/master/experiment%20code).
 
 
 ## Preparing for the experiment
