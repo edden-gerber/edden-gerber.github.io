@@ -9,8 +9,8 @@ My research at Leon Deouell's [Human Cognitive Neuroscience Lab](https://www.hcn
 
 ## Publications
 * [Cortical representation of persistent visual stimuli](https://doi.org/10.1016/j.neuroimage.2017.08.028)
-* [Non-Sinusoidal Activity Can Produce Cross-Frequency Coupling in Cortical Signals in the Absence of Functional Interaction between Neural Sources](https://doi.org/10.1371/journal.pone.0167351)
-* [Human posterior parietal cortex responds to visual stimuli as early as peristriate occipital cortex](https://doi.org/10.1111/ejn.14164)
+* [Non-Sinusoidal Activity Can Produce Cross-Frequency Coupling in Cortical Signals in the Absence of Functional Interaction between Neural Sources](https://doi.org/10.1371/journal.pone.0167351) (co-author, with Boaz Sadeh)
+* [Human posterior parietal cortex responds to visual stimuli as early as peristriate occipital cortex](https://doi.org/10.1111/ejn.14164) (contributor, with Tamar Regev)
 * [Sustained High- and Low-Frequency Neural Responses to Visual Stimuli in Scalp EEG](https://www.biorxiv.org/content/10.1101/290593v1)
 * fMRI BOLD responses to prolonged visual stimuli across the ventral visual stream (unpublished)
 
