@@ -12,15 +12,15 @@ toc_sticky: true
 
 If I say I'm 50 km from your location, would you be able to guess where I am?
 
-This question came up as I was chatting with someone on a popular dating app. This app like others of its kind is based on users' location, and so displays the distance of potential matches from your location. This particular person happened to be traveling for work about 2800 km away at the time, and as I tried to guess where they were visiting, I occurred to me that a bit of data and coding can make this game much easier.
+This question came up as I was chatting with someone on a popular dating app. This app, like others of its kind, is based on users' location, and so displays the distance of potential matches from your location. This particular person happened to be traveling for work about 2800 km away at the time, and as I tried to guess where they were visiting, I occurred to me that a bit of data and coding can make this game much easier.
 
 This turned out to be a very entertaining one-day project, that had me looking into world population data, sphere geometry, google maps API, and even signal processing. This is the idea: given that a person is located in unknown coordinates on Earth _(lat<sub>2</sub>, long<sub>2</sub>)_ but with known distance from a location _(lat<sub>1</sub>, long<sub>1</sub>)_, how can we best guess _(lat<sub>2</sub>, long<sub>2</sub>)_? My approach was to use world population density data, and assign probabilities to locations based on this density.
 
 ## First stop: NASA
 
-First we need some data. I ended up on [NASA's Socioeconomic Data and Applications Center (SEDAC)](https://sedac.ciesin.columbia.edu/) website, where I found the Gridded Population of the World (GPW) v4.11 data set ([download here](https://sedac.ciesin.columbia.edu/data/set/gpw-v4-population-density-rev11/data-download), free registration required). Several resolutions are available - a 2.5 Minute (~5km) grid seemed good enough to me without having to deal with a heavy dataset.
+First we need some data. I ended up on [NASA's Socioeconomic Data and Applications Center (SEDAC)](https://sedac.ciesin.columbia.edu/) website, where I found the Gridded Population of the World (GPW) v4.11 data set ([download here](https://sedac.ciesin.columbia.edu/data/set/gpw-v4-population-density-rev11/data-download), free registration required). Several resolutions are available - a 2.5 minute (about 5km; a minute is 1/60 of a degree) grid seemed good enough to me without having to deal with a heavy dataset.
 
-This in an ASCII file containing 4320 rows and 8640 columns of numbers, corresponding to population density estimates for a square grid covering the Earth's surface (180&deg; of latitude and 360&deg; of longitude in steps of 2.5 Minutes, or 0.04167&deg;). It also contains six header lines. Non-land locations are coded as -9999, which we'll replace with NaN (I'm using Python; import commands are placed where they are first required for clarity).
+It's an ASCII file containing 4320 rows and 8640 columns of numbers, corresponding to population density estimates for a square grid covering the Earth's surface (180&deg; of latitude and 360&deg; of longitude in steps of 2.5 Minutes, or 0.04167&deg;). It also contains six header lines. Non-land locations are coded as -9999, which we'll replace with NaN (I'm using Python; import commands are placed where they are first required for clarity).
 
 ```python
 import numpy as np
@@ -30,7 +30,10 @@ data_path = 'data\gpw-v4-population-count-rev11_2020_2pt5_min_asc\gpw_v4_populat
 data = pd.read_csv(data_path, skiprows=6, sep=' ', header=None, usecols=np.arange(8640), na_values=-9999)
 ```
 
-Our strategy would be to provide a center location and distance, retrieve all population density grid entries that fall on the corresponding circle, and derive probabilities for discrete location names - using Google Maps' API to translate coordinates to rich location data.
+Our strategy will be to:
+1. **Choose a center location and distance**
+2. **Retrieve all population density grid entries that fall on the corresponding circle on Earth**
+3. **Compute probabilities for discrete location labels - using Google Maps' API to translate numerical coordinates to rich location data.**
 
 ## Doing the math
 
