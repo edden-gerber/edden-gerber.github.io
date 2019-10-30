@@ -39,3 +39,11 @@
     <script src="{{ script_path }}"></script>
   {% endfor %}
 {% endif %}
+
+
+# Added this 30.10.19
+{% if page.header-img %}
+    <meta property="og:image" content="{{ site.url }}/{{ page.header-img }}" />
+{% endif %}
+
+<meta property="og:description" content="{{ page.excerpt }}" />
