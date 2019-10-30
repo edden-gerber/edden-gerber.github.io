@@ -42,7 +42,8 @@
 
 
 {% if page.header %}
-    <meta property="og:image:secure_url" content="https://{{ site.url }}/{{ page.header.image }}" />
+    <meta property="og:image" content="{{ site.url }}/{{ page.header.image }}" />
+    <meta property="og:image:secure_url" content="{{ site.url }}/{{ page.header.image }}" />
 {% endif %}
 
 <meta property="og:description" content="{{ page.excerpt }}" />
