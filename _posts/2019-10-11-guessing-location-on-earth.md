@@ -1,5 +1,6 @@
 ---
 title: "Guessing Someone's Location On Earth Based On Their Distance"
+canonical_url: "https://edden-gerber.github.io/guessing-location-on-earth/"
 date: 2019-10-11
 share: true
 excerpt: "A small project encompassing population data, geometry, signal processing and Google Maps API"
