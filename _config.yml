@@ -16,11 +16,11 @@ minimal_mistakes_skin    : "air" # "air", "aqua", "contrast", "dark", "dirt", "n
 
 # Site Settings
 locale                   : "en-IL"
-title                    : "Edden's data science blog"
+title                    : "Cake or Math: A Data/Science Blog"
 title_separator          : " | "
 subtitle                 : # site tagline that appears below site title in masthead
 name                     : "Edden Gerber"
-description              : "Data science portfolio and blog"
+description              : "Data science blog and portfolio"
 url                      : edden-gerber.github.io # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : edden-gerber/edden-gerber.github.io # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
