@@ -5,8 +5,8 @@ date: 2019-10-11
 share: true
 excerpt: "A small project encompassing population data, geometry, signal processing and Google Maps API"
 header:
-  image: "assets/images/guess_location/london.png"
-  teaser: "assets/images/guess_location/london.png"
+  image: "assets/images/guess-location/london.png"
+  teaser: "assets/images/guess-location/london.png"
 toc: true
 toc_sticky: true
 ---
