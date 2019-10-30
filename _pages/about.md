@@ -1,7 +1,7 @@
 ---
 title: "About me"
 permalink: /about/
-
+canonical_url: "https://edden-gerber.github.io/about/"
 header:
   image: "assets/images/integral machine.png"
 ---

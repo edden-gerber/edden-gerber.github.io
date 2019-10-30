@@ -1,6 +1,7 @@
 ---
 title: "Neuroscience"
 permalink: /neuro/
+canonical_url: "https://edden-gerber.github.io/neuro/"
 toc: true
 toc_sticky: true
 ---

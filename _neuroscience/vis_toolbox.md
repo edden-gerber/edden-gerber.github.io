@@ -1,6 +1,7 @@
 ---
 title: "The ECoG/fMRI visualization and data plotting toolbox for Matlab"
 permalink: /vis_toolbox/
+canonical_url: "https://edden-gerber.github.io/vis_toolbox/"
 date: 2019-10-11
 share: true
 excerpt: "Toolbox for visualizing 3D brain models in Matlab, as well as to flexibly plot data on and around the brain surfaces"

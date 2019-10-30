@@ -1,7 +1,7 @@
 ---
 title: "Posts"
 permalink: /posts/
-
+canonical_url: "https://edden-gerber.github.io/posts/"
 layout: collection
 header:
 

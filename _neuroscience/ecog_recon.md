@@ -1,6 +1,7 @@
 ---
 title: "Intracranial EEG (ECoG) anatomical processing and electrode reconstruction pipeline"
 permalink: /ecog_recon/
+canonical_url: "https://edden-gerber.github.io/ecog_recon/"
 date: 2019-10-12
 share: true
 excerpt: "MATLAB scripts and function for Intracranial EEG anatomical processing and electrode reconstruction"

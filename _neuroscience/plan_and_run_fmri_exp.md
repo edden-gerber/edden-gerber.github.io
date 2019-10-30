@@ -1,6 +1,7 @@
 ---
 title: "How to plan and run an fMRI experiment"
 permalink: /plan_and_run_fmri_exp/
+canonical_url: "https://edden-gerber.github.io/plan_and_run_fmri_exp/"
 date: 2019-10-10
 share: true
 excerpt: "My A-to-Z guide to planning and running an fMRI experiment"

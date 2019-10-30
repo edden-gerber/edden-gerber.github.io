@@ -1,6 +1,7 @@
 ---
 title: "MATLAB functions for time series analysis and statistics"
 permalink: /eeg_functions/
+canonical_url: "https://edden-gerber.github.io/eeg_functions/"
 date: 2019-10-13
 share: true
 excerpt: "MATLAB functions for time series analysis and statistics"

@@ -1,6 +1,7 @@
 ---
 title: "Setting up a Linux virtual machine for the fMRI analysis pipeline"
 permalink: /setup_vm_for_fmri/
+canonical_url: "https://edden-gerber.github.io/setup_vm_for_fmri/"
 date: 2019-10-11
 share: true
 header:
