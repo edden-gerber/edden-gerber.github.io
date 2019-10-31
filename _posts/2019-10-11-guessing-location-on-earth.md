@@ -9,6 +9,8 @@ header:
   teaser: "assets/images/guess-location/london.png"
 toc: true
 toc_sticky: true
+crosspost_to_medium: true
+
 ---
 
 If I say I'm 50 km from your location, would you be able to guess where I am?
@@ -143,7 +145,7 @@ fig
 
 ...And here we are!
 
-![circle around location](../assets/images/guess_location/2850_km_circle.png "So far so good")
+![circle around location](../assets/images/guess-location/2850_km_circle.png "So far so good")
 
 ## Smoothing out the details
 
@@ -166,7 +168,7 @@ plt.ylabel('Population density', size=16);
 plt.title('Population density across the circle', size=20);```
 ```
 
-![unfiltered signal](../assets/images/guess_location/unfiltered signal.png "Space series")
+![unfiltered signal](../assets/images/guess-location/unfiltered signal.png "Space series")
 
 So what we have here is a time series - or rather a space series if you will. We can see the peak clusters that correspond to the blobs in Russia, Ethiopia and Europe in the map above (angle 0 is right above the center). With my scientific background analyzing biological time series data, I feel right at home here... I also know that I can't just run a peak-finding function on this series, since it is very non-smooth and so there are peaks everywhere - in the sense of samples that are simply higher than their immediate neighbors.
 
@@ -188,7 +190,7 @@ plt.title('Population density across the circle', size=20);
 plt.xlim([305, 315]);
 ```
 
-![unfiltered with peaks](../assets/images/guess_location/unfiltered signal with peaks.png "this is unhelpful")
+![unfiltered with peaks](../assets/images/guess-location/unfiltered signal with peaks.png "this is unhelpful")
 
 _find_peaks_ has parameters we can play with to narrow down the results, like minimal height, minimal distance from other peaks, and so on. Rather than get into that, I prefer to look at the problem from a signal processing perspective and simply apply a smoothing filter. This has the advantages of not only getting rid of this pesky quantization noise in the signal, but also introducing a bit of spatial integration - that is, the value at each point will reflect not only the density at this point but also a weighted sum of neighboring points (since any smoothing - i.e. "low pass" - filter is basically a moving weighted average). This works for us because by going with the "peaks" approach we're basically ignoring the data around the peaks.
 
@@ -224,7 +226,7 @@ plt.legend(['Before filtering','After filtering'], fontsize=16);
 plt.xlim([310, 335]);
 ```
 
-![filtered vs unfiltered](../assets/images/guess_location/filtered vs unfiltered.png "much better")
+![filtered vs unfiltered](../assets/images/guess-location/filtered vs unfiltered.png "much better")
 
 Looking at the entire circle again, and with some nicer graphics:
 
@@ -238,7 +240,7 @@ plt.ylabel('Population density',size=16);
 plt.title('Peaks in population density', size=20);
 ```
 
-![smoothed signal with peaks](../assets/images/guess_location/smoothed with nice peaks.png "nice plots are what it's all about")
+![smoothed signal with peaks](../assets/images/guess-location/smoothed with nice peaks.png "nice plots are what it's all about")
 
 ## Going local
 
@@ -282,7 +284,7 @@ candidate_locations.dropna(axis=0, inplace=True)
 
 This is now what our dataframe looks like:
 
-![dataframe head](../assets/images/guess_location/dataframe.png)
+![dataframe head](../assets/images/guess-location/dataframe.png)
 
 We could wrap up here and simply sort by _pop_density_ to get our final suggestions. But we'll go a bit further and handle the case of non-unique rows. That is, the case that there are multiple peaks within the same locality. Although it's a bit problematic to do this after abandoning the idea of continuous integration in favor of focusing on peaks (as it unjustifiably biases our results toward localities that have multiple distinct density peaks), let's just go ahead and sum these together, using of course the awesome power of groupby.
 At the same time, it makes sense to separate our results into multiplicative country and locality probabilities - such that the probability for a country is the sum of probabilities of locations within it, and probabilities for localities are computed within their respective countries. This is also easily accomplished with groupby.
@@ -327,13 +329,13 @@ for cname, cgroup in candidate_locations.groupby('country', sort=False): # sort=
         print('\t\t(%.2f%%) ' %(perc) + (' ' if perc<10 else '') + ' \tLocality: ' + lname) # Some formatting to make sure the columns are aligned. Is there maybe a better way to do this...?
 ```
 
-![2850km results](../assets/images/guess_location/results_berlin.png "right on the money")
+![2850km results](../assets/images/guess-location/results_berlin.png "right on the money")
 
 So our most likely result is Germany with 53.5%, with Berlin being the most likely location within this country. Incidentally, this is indeed where my conversation partner was at the time, so that's nice and validating.
 
 But what if they happened to be a bit further away, say in Brussels, Belgium (3245km)? Well, since our algorithm cares about nothing but population density, our answer would have been very different:
 
-![3245km results](../assets/images/guess_location/results_karachi.png "showing only first two countries")
+![3245km results](../assets/images/guess-location/results_karachi.png "showing only first two countries")
 
 This would of course be wrong if the other person was an Israeli citizen like myself, implying a strong prior probability against Karachi. So on a final note, how could we take this little project further if we wanted it to take advantage of additional knowledge that we may have? One idea that comes up is to use international travel statistics - what is the volume of travel between pairs of countries - and generating from it a probability prior (assuming of course that we know the target individual's nationality). Of course, having two or more sets of probabilities means that I need to decide how to weigh them. I could try to learn these weights or even use a more complex prediction model using each set as a feature - though this would make it a supervised learning problem requiring labeled data of people's distances and locations. In other words, it's doable but somebody will have to pay me for it :)
 
