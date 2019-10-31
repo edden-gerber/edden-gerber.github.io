@@ -177,3 +177,7 @@ $navicon-width: 1.5rem !default;
 $navicon-height: 0.25rem !default;
 $global-transition: all 0.2s ease-in-out !default;
 $intro-transition: intro 0.3s both !default;
+
+/* Export posts to Medium.com */
+$MEDIUM_INTEGRATION_TOKEN: "2997cb902ed5b81e6846c526ff5c5dbd59dc7f8ffccc1777b1a7e117b29084f65"
+$MEDIUM_USER_ID: "1b14ddb01ef1b7de18b7c37374ec41f99e37118fb89e2e842e6c0b7a311365a3d"
