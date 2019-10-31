@@ -165,7 +165,7 @@ plt.plot(x_axis_values, pop_density, c='r')
 
 plt.xlabel('Location on circle (degrees)', size=16);
 plt.ylabel('Population density', size=16);
-plt.title('Population density across the circle', size=20);```
+plt.title('Population density across the circle', size=20);
 ```
 
 ![unfiltered signal](../assets/images/guess-location/unfiltered signal.png "Space series")
@@ -305,7 +305,8 @@ for cname, cgroup in candidate_locations.groupby('country'):
 total_pop = candidate_locations.pop_density.sum()
 ```
 
-Last thing before displaying the results - let's get them sorted in descending order. \
+Last thing before displaying the results - let's get them sorted in descending order.
+
 ```python
 # Sort by country_total_pop_density, then by locality_total_pop_density
 candidate_locations.sort_values(['country_total_pop_density','locality_total_pop_density'], inplace=True, ascending=False)
