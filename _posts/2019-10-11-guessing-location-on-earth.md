@@ -343,3 +343,5 @@ This would of course be wrong if the other person was an Israeli citizen like my
 ## To sum up
 
 This was a fun and educational little project. I enjoyed taking a simple idea and carrying it all the way to a working solution, discovering along the way how not so simple it actually is. As for the text conversation that sparked this idea, unfortunately it never became more than that. Oh well...
+
+ <font size="-1"> <b>If you wish to comment on this post you may do so on <a href="https://medium.com/@edden.gerber/guessing-someones-location-on-earth-based-on-their-distance-2d91b122f1ef">Medium</a>.</b> <font size="+1">
