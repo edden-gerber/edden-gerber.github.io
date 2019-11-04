@@ -9,11 +9,11 @@ toc_sticky: true
 My research at Leon Deouell's [Human Cognitive Neuroscience Lab](https://www.hcnl.org/) was about how the human visual cortex represents visual stimuli over sustained periods of time. The links below contain a selection of guides, tools, functions and analysis pipelines that I developed over the course of my PhD.
 
 ## Publications
-* [Cortical representation of persistent visual stimuli](https://doi.org/10.1016/j.neuroimage.2017.08.028)
+* [Cortical Representation of Persistent Visual Stimuli](https://doi.org/10.1016/j.neuroimage.2017.08.028)
 * [Non-Sinusoidal Activity Can Produce Cross-Frequency Coupling in Cortical Signals in the Absence of Functional Interaction between Neural Sources](https://doi.org/10.1371/journal.pone.0167351) (co-author, with Boaz Sadeh)
-* [Human posterior parietal cortex responds to visual stimuli as early as peristriate occipital cortex](https://doi.org/10.1111/ejn.14164) (contributor, with Tamar Regev)
+* [Human Posterior Parietal Cortex Responds to Visual Stimuli as Early as Peristriate Occipital Cortex](https://doi.org/10.1111/ejn.14164) (contributor, with Tamar Regev)
 * [Sustained High- and Low-Frequency Neural Responses to Visual Stimuli in Scalp EEG](https://www.biorxiv.org/content/10.1101/290593v1)
-* fMRI BOLD responses to prolonged visual stimuli across the ventral visual stream (unpublished)
+* fMRI BOLD Responses to Prolonged Visual Stimuli Across the Ventral Visual Stream (unpublished)
 
 ## How to plan and run an fMRI experiment
 [![img](../assets/images/neuro/fmri_header-1.png)](/plan_and_run_fmri_exp/)

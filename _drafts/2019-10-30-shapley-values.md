@@ -3,27 +3,120 @@ title: "Diving Into Shapley Values and the SHAP library"
 canonical_url: "https://edden-gerber.github.io/shapley-values/"
 date: 2019-10-30
 share: true
-excerpt: "A deep empirical look into what we are asking when we ask for explanations using Shapley values"
+excerpt: "An empirical look into what we are asking when we ask about feature importance using Shapley values"
 header:
   image: "assets/images/shapley/header.png"
   teaser: "assets/images/shapley/header.png"
 toc: true
 toc_sticky: true
 ---
-If you ever looked for a way to make your complex model's results more explainable, you probably encountered the idea of Shapley values. This is a popular and theoretically robust approach to quantifying how each feature contributes to a model's prediction for a particular sample. The main problem with Shapley values is the high cost of their computation (being exponential with the number of features). Fortunately, the powerful SHAP python library provides ways to sidestep this complexity and compute Shapley values efficiently.
+*WHY YOU WOULD WANT TO READ THIS POST*
 
-My interest in this topic was sparked when I was using the SHAP library during a [recent hackathon](/datahack_2019/). I noticed that in the specific case we were working on, the SHAP code seemed to be quite inefficient - taking so long to run for the entire dataset, that I wondered whether in this case it would actually be faster to compute Shapley values using a direct, "brute force" approach. This led me to write a function that does exactly that, based on the original, inefficient formulation of Shapley values - and then test under which circumstances it can outperform the SHAP library. Along the way, I picked up some very interesting (in my opinion) insights about what exactly we are getting when we compute Shapley values using each approach.
+If you ever looked for a way to make your complex model's results more explainable, you probably encountered the idea of Shapley values. This is a popular and theoretically robust approach to quantifying how each feature contributes to a model's prediction for a particular sample. The main problem with Shapley values is the high cost of their computation (being exponential with the number of features). Fortunately, the powerful SHAP python library provides ways to sidestep this complexity and compute Shapley values efficiently. **But is this a free lunch? And if not, how are we paying for it?**
 
-## Outline and tl;dr
-In this post I will try to do the following:
-* **Explain what Shapley values are and how are they computed**
-* **Show how the SHAP library and the "direct" Shapley computation provide two different approaches to feature importance, the former focusing on explaining individual samples given a model and the latter on explaining a model given a dataset.**
-* **Show how under some (limited) circumstances, the direct Shapley computation can be more efficient than the SHAP library.**
+My interest in this topic was sparked when I was using the SHAP library during a [recent hackathon](https://edden-gerber.github.io/datahack-2019/). I noticed that in the specific case we were working on, the SHAP code seemed to be quite inefficient - taking so long to run for the entire dataset, that I wondered whether in this case it would actually be faster to compute Shapley values using a direct, "brute force" approach. This led me to write a function that does exactly that, based on the direct, inefficient formulation of Shapley values (which I will call "exact Shapley values" here) - and test how it behaves compared to the SHAP library and under which circumstances it might outperform it. Along the way, I picked up some interesting (in my opinion) insights about what exactly we are getting when we compute Shapley values.
 
-(short summary of findings)
+## Outline (not quite a tl;dr)
+If you need an introduction to Shapley values, I've added one at the end of this post so as not to encumber the reading of those already familiar with the topic. A detailed description of my code is likewise included at the end.
+
+In this post I will try to show the following:
+* **"Exact" Shapley values can be computed for a low number of features** by retraining the model for each of 2<sup>M</sup> feature subsets.
+* **The SHAP library explainers and the exact Shapley function provide two different interpretations to Shapley values**, the former best suited for explaining individual predictions for a given (trained) model, and the latter better suited for explaining global feature importance for a given dataset and model class.
+* **Comparing the output of the (efficient but complex) SHAP library functions to the (computationally expensive but conceptually intuitive) exact Shapley approach gives us some useful insights into what we get when we use these functions.**
+* **Under some (limited) circumstances, the direct Shapley computation can be faster than the SHAP library explainers.** These circumstances are broadly when you a. have a low number of features (<15), b. are using a model that is not supported by the efficient SHAP explainers and which has a relatively low training/prediction run time ratio (such as isolation forest), and c. need to compute Shapley values for a large number of samples (e.g. entire dataset).
+
+## Defining "exact" Shapley values
+Implementing the concept of Shapley values for explaining predictive models is matter of some interpretation. I am referring to the method explained here as "exact" Shapley computation because it is deterministic and does not rely on stochastic estimation - *not* because it is necessarily more "true" than another method. With this point made, I will drop the quotation marks from now.
+
+A Shapley value reflects the expected value of the surplus payoff generated by adding a player to a coalition, across all possible coalitions that don't include the player. In the machine learning realm, this is interpreted as **the expected value of the difference in model output generated by adding a feature to the model, across all possible feature combinations**. Intuitively, this tells me that to compute these differences for a particular feature, we should _train the model with and without this feature_ and compare its outputs. This is _not_ the approach used by the SHAP library explainers (for justified reasons), which do not re-train the model but rather estimate the effects of missing features in other ways.
+
+The exact Shapley values function (code [here](XXX)) takes a dataset and a payoff function, computes the payoff for each possible feature (/player) combination and derives Shapley values according to the formula:
+{% include figure image_path="../assets/images/shapley/shapley-formula.png" alt="Shapley value formula" caption="_&phi;<sub>i</sub>_ is the Shapley value for feature _i_, _S_ is a coalition of features, _v(S)_ is the payoff for this coalition, and N is the total number of features. _N\\{i}_ is all the possible feature coalitions not containing _i_. The first term within the sum corresponds to the fraction of times _S_ appears within the possible feature permutations; intuitively, this gives the highest weight to the most informative contributions of a feature, i.e. when it is either isolated or when it is added to a full set of features. " %}
+
+The payoff function can be any function that takes a 2-dimensional dataset and returns a score (for instance, the profit generated by a team of workers), but for our purposes it will always be a function that trains a particular type of model on the dataset, and returns a prediction for each row. This means that while we specify the model parameters in advance within the function (e.g. number of trees in a random forest), the model is re-trained each time on a dataset containing a subset of features supplied by the exact Shapley function.
+
+Example: let's say we want to compute Shapley values for a model that predicts _y_ using _x<sub>1</sub>_, _x<sub>2</sub>_, and _x<sub>3</sub>_ with XGBoost. We will write a custom payoff function that initializes an XGB model, trains it on input arguments _X_ and _y_ and returns a prediction for each sample (perhaps splitting them into training/validation first). The exact Shapley values function will feed the payoff function each possible feature combination in _X_ ({_x<sub>1</sub>_}, {_x<sub>1</sub>_,_x<sub>2</sub>_}, etc.), and use the scores to compute a Shapley value for each feature and each sample. The output is then the same as that of the SHAP library explainers, and so all the SHAP plotting tools can be used to visualize it.
+
+An additional optional input argument to the function is the payoff for the empty feature set. Since a model cannot be trained with zero features, this payoff needs to be defined explicitly. This value can be zero by default, which means that the contribution of all features will add up to the exact value of the prediction. Alternatively, this could be set to the mean prediction value, which would result in feature contributions being relative to this mean (given that knowing nothing we would assume the mean prediction, each additional known feature will move this prediction up or down) - which is what we get when we use the SHAP library explainers.
+
+The main disadvantage of this algorithm is its computational complexity - it needs to run 2<sup>num. features</sup> times, re-training the model each time. As a rule of thumb, if model training takes 1 second and you don't want more than about an hour of run time, you shouldn't use this method when you have more than 12 features. On the other hand, under some circumstances this may be a faster option than using the SHAP library explainers. The issue of comparative run time is covered later in this post.
+
+
+## What do the SHAP explainers do differently, and why should we care?
+The SHAP library provides three "explainer" classes - TreeExplainer, DeepExplainer and KernelExplainer. The first two are specialized for computing Shapley values for tree-based models and neural networks, respectively, and implement optimizations that are based on the architecture of those models, while the kernel explainer is a "blind" method that works with any model.
+
+### KernelExplainer
+The kernel explainer differs from the exact Shapley computation in two main ways:
+1. Instead of iterating over all 2<sup>M</sup> possible feature coalitions, it samples a small subset of them (the default value is _nsamples=2*M+2048_. So if we have for example 20 features, then this will sample 2088/2<sup>20</sup> or about 0.2% of the possible coalitions). Coalitions are not selected completely randomly; rather, those with higher weight in the Shapley formula will be selected first (so, coalitions of 0 or M-1 features, which are most informative about the effect of adding  another feature, are more likely to be included).
+2. Instead of re-training the model at each iteration, it runs the already-trained input model but replaces the values of "missing" features with randomly selected values from other samples (a small "background" dataset). This additionally decreases total runtime because most models require significantly less time for prediction than for training.
+
+The significance of (1) is that Shapley values are basically estimated using random sampling. Appropriately, increasing _nsamples_ leads to increased runtime (more or less linearly) and decreased variance in the estimation (meaning that when you run the explainer multiple times, the Shapley values will be more similar to each other and to the expected value). This is easily demonstrated by running the Kernel Explainer with different _nsamples_ values:
+
+{% include figure image_path="../assets/images/shapley/kernel_exp_nsamples.png" alt="SHAP kernel explainer runtime and estimation variance as a function of nsamples" caption="Based on the Census Income database included in the SHAP library. Estimation variance and mean run time are computed across 30 iterations of running the SHAP explainer on a K-Nearest-Neighbors classification model." %}
+
+The significance of (2) - handling "missing" features by replacing their values with surrogate "background" data - is more complex:
+* First and most simply, it is an **additional source of variance** to the Shapley value estimation, as the results are to at least some extent dependent on the selection of the background dataset.
+* Second, it makes an **assumption about feature independence**: if for example features _x<sub>1</sub>_, _x<sub>2</sub>_ are highly correlated in our training data, replacing values of  _x<sub>1</sub>_ with random ones from the background dataset ignores this dependence and generates predictions based on {_x<sub>1</sub>_, _x<sub>2</sub>_} instances which are not likely to appear in the training set, making the SHAP value estimation less reliable.
+* And finally, it represents an **interpretation of feature contribution to the prediction** not as how they affect the content of the prediction model itself (as in the exact Shapley computation method that re-trains the model without the missing features), but rather how they affect the result of the already-trained model if the values of these feature were unknown. The outcome of this difference will become clearer in the next sections.
+
+Let's see how these points add up with an example.
+
+We will look at Shapley values for one of the datasets included in the SHAP library - the [adult census database](https://archive.ics.uci.edu/ml/datasets/adult), where 12 demographic features are used to predict whether an individual's income is >50K$. Following the [example](https://slundberg.github.io/shap/notebooks/Census%20income%20classification%20with%20scikit-learn.html) of the SHAP library developers, we will use a KNN model to make this prediction and the KernelExplainer to provide Shapley values - comparing them to those generated with the Exact Shapley values method. For clarity and reduced computation runtime, we'll include only 5 of the 12 features in our model (Age, Education-Num, Marital Status, Occupation, and Sex).
+
+```python
+X,y = shap.datasets.adult()
+X = X[['Age', 'Education-Num', 'Marital Status', 'Occupation', 'Sex']]
+```
+
+Let's define a model and use the KernelExplainer to get SHAP values (we'll compute them only for the first 1000 samples because the KernelExplainer is quite slow...):
+```python
+import shap
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier()
+knn.fit(X, y)
+f = lambda x: knn.predict_proba(x)[:,1] # Get the predicted probability that y=True
+explainer = shap.KernelExplainer(f, X[0:100]) # The second argument is the "background" dataset; a size of 100 rows is gently encouraged by the code
+kernel_shap = explainer.shap_values(X[0:1000])
+```
+
+Now let's use the exact Shapley values function. First we'll define our payoff function, which trains the KNN model and outputs the probability of _y=True_ for each sample:
+```python
+def shap_payoff_KNN(X, y):
+    knn = KNeighborsClassifier()
+    knn.fit(X, y)
+    return knn.predict_proba(X)[:,1]
+```
+
+And now run the function itself (_reshape_shapley_output_ just re-arranges the original output, since _exact_shapley_values_ returns a dictionary that does not assume a particular payoff format):
+```python
+import numpy as np
+from exact_shapley_values import exact_shapley_values
+from exact_shapley_values import reshape_shapley_output
+mean_prediction = np.mean(shap_payoff_KNN(X,y))
+exact_shapley = reshape_shapley_output(exact_shapley_values(shap_payoff_KNN, X, y, zero_payoff=np.ones(X.shape[0])*mean_prediction))
+exact_shapley = exact_shapley[0:1000] # exact_shapley_values returns Shaply values for all rows, so this is just to match the output of the kernel explainer.
+```
+
+<br>
+Comparing exact and KernelExplainer Shapley values:
+{% include figure image_path="../assets/images/shapley/kernel_vs_exact_scatter.png" alt="scatter plot" caption="" %}
+
+The correlation between Shapley values produced by the two methods is apparent, as are the differences. Another way to summarize the differences is that if we sort and rank the Shapley values of each sample (from 1 to 5), the order would be different by about 0.5 ranks on average (e.g. in about half of the samples two adjacent features' order is switched). However, we'll wait with the discussion of the nature of these differences until the next section where they are easier to understand. For now let's just remember that we are not looking at the relation between "true" values and their noisy estimation: instead, _exact Shapley values are a deterministic measure of one thing, and the kernel SHAP values are a noisy estimation of another (related) thing_.
+
+### TreeExplainer
+
+
+### Wait, what about DeepExplainer?
+
+bla bla bla
+
+## Run time of exact Shapley computation vs SHAP explainers
+**When is the exact Shapley computation feasible? And when is it faster than the SHAP explainers?**
+bla bla bla
+
 
 ## What are Shapley Values
-If you are familiar with the concept of Shapley values, you can skip this section. A quick Google search will also reveal numerous other sources online that explain this topic very well (I found that looking at the basic mathematical formulation on Wikipedia until I understood it gave me the best intuition), so my explanation will be brief.
+If you are familiar with the concept of Shapley values, you can skip this section. A quick Google search will also reveal numerous other sources online that explain this topic very well (I found that staring at the mathematical formula on the Wikipedia page until I got it gave me the best intuition), so my explanation will be brief.
 
 Shapley values are a concept from game theory, describing how the contribution to a total payoff generated by a coalition of players is divided across the players. The relevance of this concept to machine learning is apparent if you translate "payoff" to "prediction" and "players" to "features".
 The definition of the Shapley value (using ML terminology) is quite straightforward: the contribution of any feature is the expected value, across all possible permutations of feature combinations not containing this feature, of the prediction change caused by adding this feature. It looks like this:
@@ -45,7 +138,8 @@ Applying the formula (the first term of the sum in the Shapley formula is 1/3 fo
 
 
 
-##
+## Code to compute "exact" Shapley values
+
 
 
  <font size="-1"> <b>If you wish to comment on this post you may do so on <a href="https://medium.com/@edden.gerber...">Medium</a>.</b> <font size="+1">
