@@ -15,7 +15,7 @@ toc_sticky: true
 * **If you ever waited too long for the SHAP kernel explainer to compute SHAP values for your entire dataset, and wonder if there might be a faster approach** (spoiler: _maybe_, if you have less than 15-20 features in your model - or see the end of the post for another theoretical suggestion).
 * **If you want to learn about the concept of Shapley values** (there are plenty of other sources for that, but I include a [brief explanation](#what-are-shapley-values) here too).
 
-**In a hurry?** I've emphasized key sentences to assist your speed-reading :)
+**In a hurry?** I've emphasized the key sentences **in bold** to assist your speed-reading :)
 
 ## A more wordy introduction
 If you ever looked for a way to make your complex model's results more explainable, you probably encountered the notion of Shapley values and the SHAP python library. It is an increasingly popular and theoretically robust approach method of quantifying how each feature contributes to a model's prediction for a particular sample. **While Shapley values can be highly expensive to compute, the SHAP library provides ways to sidestep this complexity. But is this a free lunch? And if not, how are we paying for it?**
@@ -225,7 +225,7 @@ Let's look at an example: you have a model that predicts the probability of rain
 
 Let's compute this for feature _C_, using all possible feature combinations not containing it. For the sake of simplicity, let's say that each missing feature can be assumed to be _false_ rather than _unknown_.
 
-|| S || v(S) || S &cup; {i} || v(S &cup; {i}) || Change in prediction after adding {i} ||
+|| Coalition without _C_ || Output without _C_ || Coalition with _C_ ||  Output with _C_ || Change in prediction after adding _C_ ||
 ||---    ||: --- ||: --- ||: ---||: ---||
 || { }   || 0%      || {C}      || 20%   || **20%** ||
 || {A}   || 20%     || {A,C}    || 90%   || **70%** ||
