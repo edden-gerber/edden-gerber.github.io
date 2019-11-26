@@ -19,7 +19,7 @@ My research at Leon Deouell's [Human Cognitive Neuroscience Lab](https://www.hcn
 [![img](../assets/images/neuro/fmri_header-1.png)](/plan_and_run_fmri_exp/)
 My complete guide to planning and running an fMRI experiment (with Matlab experiment code template).
 
-## How to analyze fMRI Data
+## How to analyze fMRI Data with FreeSurfer and FSFAST
 [![img](../assets/images/neuro/fmri_header-2.png)](/analyze_fmri_data/)
 My complete guide to analyzing and visualizing fMRI data using FreeSurfer and FSFast (with analysis pipeline code template).
 

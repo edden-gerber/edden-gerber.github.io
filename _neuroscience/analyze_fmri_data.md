@@ -46,9 +46,9 @@ The pipeline makes use of the following tools:
 
 ### How to organize your analysis folders
 My recommendation for the directory structure of the analysis folder is as follows:
-* Anatomical: will hold the anatomical information (after conversion to the Matlab format by the analysis script) and clean brain images produced by FreeSurfer.  
-* FreeSurfer/FSFAST: will hold the analysis scripts and results of the initial FSFAST analysis. Note that FreeSurfer's anatomical subject data is expected to be on the ~/FreeSurfer/Subjects folders on the Linux machine on which FreeSurfer runs.
-* Main: will hold the experiment-specific scripts and results.
+* **Anatomical**: will hold the anatomical information (after conversion to the Matlab format by the analysis script) and clean brain images produced by FreeSurfer.  
+* **FreeSurfer/FSFAST**: will hold the analysis scripts and results of the initial FSFAST analysis. Note that FreeSurfer's anatomical subject data is expected to be on the ~/FreeSurfer/Subjects folders on the Linux machine on which FreeSurfer runs.
+* **Main**: will hold the experiment-specific scripts and results.
 
 Note that the _run_fsfast.m_ analysis script assumes that the results folder has a subfolder named as each subject’s ID (e.g. “s101” etc.), and will also create such a subfolder within the anatomical and fsfast folders.
 
@@ -58,17 +58,17 @@ The general steps involved in this fMRI analysis pipeline are summarized in the 
 
 ![fMRI analysis flowchart](../assets/images/neuro/fmri_flowchart.png)
 
-* Analyzing the anatomical data involves taking the T1 anatomical scan and feeding it to the FreeSurfer algorithm. This will result in both “cleaned” T1 volume images and cortical surface objects. The latter are imported into Matlab along with any metadata provided by FreeSurfer such as cortical thickness (and additional metadata e.g. from external anatomical atlases).
-* Pre-processing of the functional data includes (optionally) motion correction, slice timing correction, spatial smoothing, intensity normalization, and brain-mask creation.
-* 1st-level analysis is the application of a GLM to the functional data for two purposes: 1. Regressing out “nuisance factors” (including head motion and polynomial predictors of each block, e.g. baseline level, linear trend, parabolic trend etc.); 2. Computing beta levels for your experimental factors for the analyzed subject. This step also includes planned contrasts between experimental conditions within each subject.
-* Group level (or 2nd-level) analysis is the statistical analysis of your results (e.g. the subjects’ beta values or contrast t-values) across your subject sample.
+* **Analyzing the anatomical data** involves taking the T1 anatomical scan and feeding it to the FreeSurfer algorithm. This will result in both “cleaned” T1 volume images and cortical surface objects. The latter are imported into Matlab along with any metadata provided by FreeSurfer such as cortical thickness (and additional metadata e.g. from external anatomical atlases).
+* **Pre-processing of the functional data** includes (optionally) motion correction, slice timing correction, spatial smoothing, intensity normalization, and brain-mask creation.
+* **1st-level analysis** is the application of a GLM to the functional data for two purposes: 1. Regressing out “nuisance factors” (including head motion and polynomial predictors of each block, e.g. baseline level, linear trend, parabolic trend etc.); 2. Computing beta levels for your experimental factors for the analyzed subject. This step also includes planned contrasts between experimental conditions within each subject.
+* **Group level (or 2nd-level) analysis** is the statistical analysis of your results (e.g. the subjects’ beta values or contrast t-values) across your subject sample.
 
 In working with this analysis pipeline and the provided scripts, you have three main options:
-1. Use the FSFast functionality up to and including first level analysis. This means that the final output will be cortical surface maps of beta-values (or t-values for contrasts) which you will read into Matlab and apply group-level analysis or any other type of analysis yourself.
-2. Use the FSFast functionality for the group-level analysis as well. This is not implemented in the scripts – you will just need to learn about the relevant commands from the documentation or recorded lectures and add them yourself.
-3. Use the FSFast functionality only up to the pre-processing step. This may be the case if you want to run the subject-level GLM yourself (if it is non-standard, or if you don’t want to use FSFast’s format for specifying the regression model).
+1. **Use the FSFast functionality up to and including first level analysis**. This means that the final output will be cortical surface maps of beta-values (or t-values for contrasts) which you will read into Matlab and apply group-level analysis or any other type of analysis yourself.
+2. **Use the FSFast functionality for the group-level analysis as well**. This is not implemented in the scripts – you will just need to learn about the relevant commands from the documentation or recorded lectures and add them yourself.
+3. **Use the FSFast functionality only up to the pre-processing step**. This may be the case if you want to run the subject-level GLM yourself (if it is non-standard, or if you don’t want to use FSFast’s format for specifying the regression model).
 
-Another choice you will need to make is whether to use a common template cortical map for all your subjects or keep each subject’s individual anatomical brain morphology:
+Another choice you will need to make is whether to **use a common template cortical map for all your subjects or keep each subject’s individual anatomical brain morphology**:
 1. The first option means that FreeSurfer’s surface registration (already applied to each subject in order to parcellate their cortical areas) will be used to map each subject’s functional data to a single common cortical template (the “fsaverage” template). This should be your choice if you plan to run group-level analysis on a voxel-level, since you will have a single cortical surface with all subjects’ functional data time course mapped to each node. This will allow you for example to produce a cortical map of group-level effect size.
 2. The second option is to analyze each subject’s functional data in relation to their own cortical surface. This avoids any co-registration errors because there is no need to map one brain to another. A common application of this approach is region-of-interest-based analysis – for each subject define anatomical or functional ROIs (e.g. V1, FFA), and run group-level analysis of measurements extracted from those, thus avoiding the need to compare single voxels directly. This approach is useful for functional ROI based analysis since functionally-defined areas may not necessarily align anatomically across subjects on the common template.
 
