@@ -12,9 +12,7 @@ toc_sticky: true
 ---
 ## What is this post about?
 
-<p align="center">
-  <img width=500 src="../assets/images/shapley/why_we_are_here_meme.jpg">
-</p>
+![Why are we here meme](../assets/images/shapley/why_we_are_here_meme.jpg)
 
 This post is the first in a series of two (or three) posts about explaining statistical models with Shapley values. I can think of two main reasons you might want to read it (apart from, you know, fun):
 1. **To learn about Shapley values and the SHAP python library**. This is what this post is about after all. The explanations it provides are far from exhaustive, and contain nothing that cannot be gathered from other online sources, but it should still serve as a good quick intro or bonus reading on this subject.
@@ -22,9 +20,7 @@ This post is the first in a series of two (or three) posts about explaining stat
 
 ## What are Shapley Values?
 
-<p align="center">
-  <img width=500 src="../assets/images/shapley/game_theory_meme.jpg">
-</p>
+![Game theory meme](../assets/images/shapley/game_theory_meme.jpg)
 
 A quick Google search will provide numerous other sources online that explain this topic very well, so my explanation here will be brief. I specifically recommend [this chapter](https://christophm.github.io/interpretable-ml-book/shapley.html) of [Interpretable Machine Learning](https://christophm.github.io/interpretable-ml-book/) by Christoph Molnar for a more detailed explanation. I also found that staring at the mathematical formula (below or on [Wikipedia](https://en.wikipedia.org/wiki/Shapley_value)) until I got it gave me the best intuition.
 
@@ -50,9 +46,7 @@ Applying the formula (the first term of the sum in the Shapley formula is 1/3 fo
 
 **The main problem with deriving Shapley values is computational complexity** - specifically, the fact that they require 2<sup>num. features</sup> steps to compute. No matter how beefed-up your GPU is, exponential complexity is almost always a deal breaker (just think how many steps this is when your features are for instance 20x20 image pixels). In the theoretical literature, this problem is most commonly addressed by sampling methods - rather than going over all possible feature coalitions, estimate the Shapley value using a sub-sample of them (if you are interested in this see for example [Castro et al. 2009](https://www.sciencedirect.com/science/article/pii/S0305054808000804), [Castro et al. 2017](https://www.sciencedirect.com/science/article/pii/S030505481730028X) or [Benati et al. 2019](https://www.sciencedirect.com/science/article/abs/pii/S0377221719304448)).
 
-<p align="center">
-  <img width=500 src="../assets/images/shapley/exponential_complexity.jpg">
-</p>
+![Exponential complexity meme](../assets/images/shapley/exponential_complexity.jpg)
 
 ## Enter the SHAP python library
 The [SHAP library](https://shap.readthedocs.io) is a recent and powerful addition to the data scientist's toolkit. It provides three main "explainer" classes - TreeExplainer, DeepExplainer and KernelExplainer. The first two are specialized for computing Shapley values for tree-based models and neural networks, respectively, and implement optimizations that are based on the architecture of those models. The kernel explainer is a "blind" method that works with any model. I explain these classes below, but for a more in-depth explanation of how they  work I recommend [this text](https://christophm.github.io/interpretable-ml-book/shap.html).
