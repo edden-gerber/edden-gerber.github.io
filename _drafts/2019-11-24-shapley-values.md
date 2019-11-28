@@ -10,6 +10,7 @@ header:
 toc: true
 toc_sticky: true
 ---
+
 ## Why should you read this post?
 * **If you want to better understand the SHAP python library and what it does**. There are numerous sources online that discuss Shapley values and the SHAP tool, but very few primary sources (like the SHAP documentation) that are not based on existing information. This post is an attempt to contribute fresh empirically-based insights on this topic.
 * **If you ever waited too long for the SHAP kernel explainer to compute SHAP values for your entire dataset, and wonder if there might be a faster approach** (spoiler: _maybe_, if you have less than 15-20 features in your model - or see the end of the post for another theoretical suggestion).

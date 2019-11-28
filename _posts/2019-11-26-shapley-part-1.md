@@ -5,16 +5,17 @@ date: 2019-11-26
 share: true
 excerpt: "An explanation of Shapley values and the SHAP python library"
 header:
-  image: "assets/images/shapley/header.png"
-  teaser: "assets/images/shapley/header.png"
+  image: "assets/images/shapley/header_1.png"
+  teaser: "assets/images/shapley/header_1.png"
 toc: true
 toc_sticky: true
 ---
 ## What is this post about?
 
+This post is the first in a series of two (or three) posts about explaining statistical models with Shapley values. I can think of two main reasons you might want to read it (apart from, you know, for fun):
+
 ![Why are we here meme](../assets/images/shapley/why_we_are_here_meme.jpg)
 
-This post is the first in a series of two (or three) posts about explaining statistical models with Shapley values. I can think of two main reasons you might want to read it (apart from, you know, fun):
 1. **To learn about Shapley values and the SHAP python library**. This is what this post is about after all. The explanations it provides are far from exhaustive, and contain nothing that cannot be gathered from other online sources, but it should still serve as a good quick intro or bonus reading on this subject.
 2. **As an introduction or refresher before reading the next post about radical Shapley values**. The next post is my attempt at a novel contribution to the topic of Shapley values in machine learning. You may be already familiar with SHAP and Shapley and are just glancing over this post to make sure we're on common ground, or you may be here to clear up something confusing from the next post.
 
@@ -42,11 +43,11 @@ Let's compute this for team member _C_, using all possible combinations not cont
 Applying the formula (the first term of the sum in the Shapley formula is 1/3 for {} and {A,B} and 1/6 for {A} and {B}), we get a Shapley value of **21.66%** for team member _C_. Team member _B_ will naturally have the same value, while repeating this procedure for _A_ will give us **46.66%**. A crucial characteristic of Shapley values is that players' contributions always add up to the final payoff: **21.66% + 21.66% + 46.66% = 90%**.
 
 ## Shapley values in machine learning
-**The relevance of this framework to machine learning is apparent if you translate _payoff_ to _prediction_ and _players_ to _features_.**. But computing Shapley values for model features is not entirely straightforward, because features in a model do not behave the same way as workers in a team. Specifically, **a predictive model cannot typically handle one of its input features being simply removed in order to test how its output changes as a result**. Instead, ML implementations of Shapley values and specifically the SHAP method, interpret _missing features_ as _features whos value is unknown_, and simulate this unknown state by averaging over possible values of the feature (the next post in this series proposes a different approach and compares it to the SHAP method).
-
-**The main problem with deriving Shapley values is computational complexity** - specifically, the fact that they require 2<sup>num. features</sup> steps to compute. No matter how beefed-up your GPU is, exponential complexity is almost always a deal breaker (just think how many steps this is when your features are for instance 20x20 image pixels). In the theoretical literature, this problem is most commonly addressed by sampling methods - rather than going over all possible feature coalitions, estimate the Shapley value using a sub-sample of them (if you are interested in this see for example [Castro et al. 2009](https://www.sciencedirect.com/science/article/pii/S0305054808000804), [Castro et al. 2017](https://www.sciencedirect.com/science/article/pii/S030505481730028X) or [Benati et al. 2019](https://www.sciencedirect.com/science/article/abs/pii/S0377221719304448)).
+**The relevance of this framework to machine learning is apparent if you translate _payoff_ to _prediction_ and _players_ to _features_**. But computing Shapley values for model features is not entirely straightforward, because features in a model do not behave the same way as workers in a team. Specifically, **a predictive model cannot typically handle one of its input features being simply removed in order to test how its output changes as a result**. Instead, ML implementations of Shapley values and specifically the SHAP method, interpret _missing features_ as _features whos value is unknown_, and simulate this unknown state by averaging over possible values of the feature (the next post in this series proposes a different approach and compares it to the SHAP method).
 
 ![Exponential complexity meme](../assets/images/shapley/exponential_complexity.jpg)
+
+**The main problem with deriving Shapley values is computational complexity** - specifically, the fact that they require 2<sup>num. features</sup> steps to compute. No matter how beefed-up your GPU is, exponential complexity is almost always a deal breaker (just think how many steps this is when your features are for instance 20x20 image pixels). In the theoretical literature, this problem is most commonly addressed by sampling methods - rather than going over all possible feature coalitions, estimate the Shapley value using a sub-sample of them (if you are interested in this see for example [Castro et al. 2009](https://www.sciencedirect.com/science/article/pii/S0305054808000804), [Castro et al. 2017](https://www.sciencedirect.com/science/article/pii/S030505481730028X) or [Benati et al. 2019](https://www.sciencedirect.com/science/article/abs/pii/S0377221719304448)).
 
 ## Enter the SHAP python library
 The [SHAP library](https://shap.readthedocs.io) is a recent and powerful addition to the data scientist's toolkit. It provides three main "explainer" classes - TreeExplainer, DeepExplainer and KernelExplainer. The first two are specialized for computing Shapley values for tree-based models and neural networks, respectively, and implement optimizations that are based on the architecture of those models. The kernel explainer is a "blind" method that works with any model. I explain these classes below, but for a more in-depth explanation of how they  work I recommend [this text](https://christophm.github.io/interpretable-ml-book/shap.html).
@@ -67,7 +68,7 @@ The KernelExplainer's approach to computing Shapley values can be summed up in t
 
 
 ### TreeExplainer
-TreeExplainer is a class that computes SHAP values for tree-based models (Random Forest, XGBoost, LightGBM, etc.). Compared to KernelExplainer it is:
+TreeExplainer is a class that computes SHAP values for tree-based models (Random Forest, XGBoost, LightGBM, etc.). Compared to KernelExplainer it's:
 1. **Exact**: Instead of simulating missing features by random sampling, it makes use of the tree structure by simply ignoring decision paths that rely on the missing features. The TreeExplainer output is therefore deterministic and does not vary based on the background dataset.
 2. **Efficient**: Instead of iterating over each possible feature combination (or a subset thereof), all combinations are pushed through the tree simultaneously, using a more complex algorithm to keep track of each combination's result - reducing complexity from _O(TL2<sup>M</sup>)_ for all possible coalitions to the polynomial _O(TLD<sup>2</sup>)_ (where _M_ is the number of features, _T_ is number of trees, _L_ is maximum number of leaves and _D_ is maximum tree depth).
 
@@ -75,7 +76,7 @@ What have we gained by using TreeExplainer? First, **we got rid of all the sampl
 
 
 ### Wait, what about DeepExplainer?
-DeepExplainer is a class specialized for computing SHAP values for neural network models. I am not including a detailed explanation of it here because 1. I lack the hands-on-experience I have with the other explainers that allows me to vouch for my explanations of them, and 2. this post is mainly a preamble to the next one where the radical Shapley method is compared to the SHAP explainers, and this comparison is largely irrelevant when it comes to explaining neural networks.
+DeepExplainer is a class specialized for computing SHAP values for neural network models. I am not including a detailed explanation of it here because **1**. I lack the hands-on-experience I have with the other explainers that allows me to vouch for my explanations of them, and **2**. this post is mainly a preamble to the next one where the SHAP explainers will be compared to the radical Shapley values approach, and this comparison is largely irrelevant when it comes to explaining neural networks.
 
 As a rough overview, the DeepExplainer is much faster for neural network models than the KernelExplainer, but similarly uses a background dataset and the trained model to estimate SHAP values, and so similar conclusions about the nature of the computed Shapley values can be applied in this case - they vary (though not to a large extent) based on the selection of background data, and they may not respect dependencies between features when generating the bootstrapped samples used for estimation.
 
