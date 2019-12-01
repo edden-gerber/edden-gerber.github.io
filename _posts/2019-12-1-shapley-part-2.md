@@ -1,9 +1,9 @@
 ---
 title: "A new perspective on Shapley values, part II: Radical Shapley values"
 canonical_url: "https://edden-gerber.github.io/shapley-part-2/"
-date: 2019-11-27
+date: 2019-12-01
 share: true
-excerpt: "Exploring a conceptual alternative to SHAP"
+excerpt: "Getting smarter about SHAP by exploring a conceptual alternative to it"
 header:
   image: "assets/images/shapley/header_2.png"
   teaser: "assets/images/shapley/header_2.png"
@@ -12,15 +12,18 @@ toc_sticky: true
 ---
 
 ## Why should you read this post?
-* **You want to better understand Shapley values and the SHAP tool**. Most other sources on these topics are explanations based on existing primary sources (e.g. academic papers and the SHAP documentation). This post is an attempt to gain some insights through an empirical approach.
-* **You want to learn about an alternative approach to computing Shapley values**, that under some (limited) circumstances may be preferable to SHAP (or wait for the next post for a more broadly-applicable idea).
+* **For insight into Shapley values and the SHAP tool**. Most other sources on these topics are explanations based on existing primary sources (e.g. academic papers and the SHAP documentation). This post is an attempt to gain some understanding through an empirical approach.
+* **To learn about an alternative approach to computing Shapley values**, that under some (limited) circumstances may be preferable to SHAP (or wait for the next post for a more broadly-applicable idea).
 
 **If you are unfamiliar with Shaply values or SHAP**, or want a short recap of how the SHAP explainers work, [check out the previous post](/shapley-part-1/).
 
 ## A more wordy introduction
-My interest in Shapley values was sparked when I was using the SHAP library during a [recent hackathon](https://edden-gerber.github.io/datahack-2019/) to explain the predictions of our Isolation Forest model. I noticed that for our model, the SHAP computation seemed to be quite inefficient, taking far too long to be run on the entire dataset. So long, in fact, that I wondered whether in this case the "brute force", exponentially-complex approach to Shapley values was actually a better option. This led me to write a function that computes Shapley values, using an approach that seemed intuitive to me - **instead of simulating missing features by integrating over their possible values, remove them altogether from the model training**. I decided to refer to this as **"radical" Shapley values**, in the sense that they are derived "from the root", that is, by re-training the model each time instead of relying on an existing model (if you can think of a better term I'd be happy to hear it!).
 
-**The idea of this post is to compare the SHAP explainers to the radical Shapley approach** by seeing how they work in different scenarios (one thing I learned as a scientist: if you want to understand and trust your analysis tools, you need to subject them to the same type of rigorous empirical study as your actual object of research).
+![SHAQ meme](../assets/images/shapley/shaq_meme.jpg)
+
+My interest in Shapley values was sparked when I was using the SHAP library during a [recent hackathon](https://edden-gerber.github.io/datahack-2019/) to explain the predictions of an Isolation Forest model. I noticed that for our model, the SHAP computation seemed to be quite inefficient, taking far too long to be run on the entire dataset. So long, in fact, that I wondered whether in this case the "brute force", exponentially-complex approach to Shapley values was actually a better option. This led me to write a function that computes Shapley values using an approach that seemed intuitive to me - **instead of simulating missing features by integrating over their possible values, remove them altogether from the model training**. I decided to refer to these as **"radical" Shapley values**, in the sense that they are derived "from the root", that is, by re-training the model each time instead of relying on an existing model (if you can think of a better term I'd be happy to hear it!).
+
+One of thing I learned as a scientist is that if you want to understand - and trust - your analysis tools, you need to subject them to careful empirical study as if they were your actual object of research. **The main idea of this post is then to better understand the advantages and limits of the SHAP explainers, by examining them in comparison to the radical Shapley approach**.
 
 Code for the Shapley function and the examples used in this post is available [here](https://github.com/edden-gerber/radical-shapley-values).
 
@@ -32,6 +35,9 @@ In this post I will try to show the following:
 * **Under some (limited) circumstances, the direct Shapley computation can be faster than the SHAP library explainers.** These circumstances are broadly when you **a.** have a low number of features (<~15), **b.** are using a model that is not supported by the efficient SHAP explainers and which has a relatively low training/prediction run time ratio (such as Isolation Forest), and **c.** need to compute Shapley values for a large number of samples (e.g., the entire dataset). In a future post I hope to eventually discuss a more practical polynomially-complex alternative of estimating radical Shapley values with sampling.
 
 ## So what are "radical" Shapley values?
+
+![grumpy cat meme](../assets/images/shapley/grumpy_cat_meme.jpg)
+
 A Shapley value reflects the expected value of the surplus payoff generated by adding a player to a coalition, across all possible coalitions that don't include the player (or, in the machine learning realm, the expected value of the difference in model output generated by adding a feature to the model). However, implementing the concept of Shapley values for explaining predictive models is matter of some interpretation. Specifically:
 * **the SHAP explainers interpret "adding a feature" in terms of it having a specific value vs. being unknown, for a given sample, during the prediction phase**, while
 * **the radical Shapley method is based on the alternative intuition of measuring a feature's impact in relation to it being absent from the model altogether during training**.
@@ -43,9 +49,9 @@ Both interpretations are consistent with the mathematical notion of Shapley valu
 
 **The payoff function can be any function that takes a dataset and returns a score** (for instance, the profit generated by a team of workers). It is thus a general function that can be used for any kind of Shapley computation, but for the purpose of generating radical Shapley values it will always be a function that trains a particular type of model on the dataset, and returns a prediction for each row.
 
-**For example**: let's say we want to compute radical Shapley values for a model that predicts _y_ using _x<sub>1</sub>_, _x<sub>2</sub>_, and _x<sub>3</sub>_ with XGBoost. We will write a custom payoff function that initializes an XGB model, trains it on input arguments _X_ and _y_ and returns a prediction for each sample (perhaps splitting them non-randomly into training/validation and returning predictions for the validation only). The Shapley function will feed the payoff function each possible feature combination in _X_ - {_x<sub>1</sub>_}, {_x<sub>1</sub>_,_x<sub>2</sub>_}, etc. - and use the scores to compute a Shapley value for each feature and each sample. The output is then the same as that of the SHAP library explainers, and so all the SHAP plotting tools can be used to visualize it.
+**For example**: let's say we want to compute radical Shapley values for a model that predicts _y_ using dataset _X_ with XGBoost. We will write a custom payoff function that initializes an XGB model, trains it on input arguments _X_ and _y_ and returns a prediction for each sample (perhaps after splitting them into training/validation and returning predictions for the validation only). The Shapley function will feed the payoff function each possible feature combination in _X_ and use the scores to compute a Shapley value for each feature and each sample. The output is then the same as that of the SHAP library explainers, and so all the SHAP plotting tools can be used to visualize it.
 
-**The main disadvantage of this algorithm is its computational complexity** - it needs to run 2<sup>M</sup> times (where _M_ is the number of features), re-training the model each time. As a rule of thumb, if model training takes 1 second and you don't want more than about an hour of run time, you shouldn't use this method when you have more than 12 features. This complexity is of course the main reason the SHAP library was needed; on the other hand, under some limited circumstances this may be a faster option than using the SHAP Kernel explainer. **The issue of comparative run time is covered later in this post**.
+**The main disadvantage of this algorithm is its computational complexity** - it needs to run 2<sup>M</sup> times (where _M_ is the number of features), re-training the model each time. As a rule of thumb, if model training takes 1 second and you don't want more than about an hour of run time, you shouldn't use this method when you have more than 12 features. This complexity is of course the main reason the SHAP library was needed; on the other hand, under some limited circumstances this may be a faster option than using the SHAP Kernel explainer. **The issue of comparative run time is covered at the end of this post**.
 
 ## How is this different from SHAP, and why should we care?
 
@@ -55,7 +61,7 @@ I compared results from the radical Shapley method to both the SHAP KernelExplai
 
 TreeExplainer is a good first candidate for the comparison with the radical Shapley approach because unlike KernelExplainer they are both deterministic, not relying on sampling-based estimation, and insensitive to dependence between features (at least in TreeExplainer's default implementation). This allows us to focus on the implications of the conceptual difference in how they treat missing features, namely, by re-training the model vs. integrating over feature values.
 
-**We can demonstrate significance of this difference with a simple artificial example**. Let's generate a 3-feature linear regression model, with one feature _x<sub>1</sub>_ which is a strong predictor of _y_, a second feature _x<sub>2</sub>_ which is strongly correlated with it (and so slightly less predictive), and a third non-predictor feature _x<sub>3</sub>_:
+**We can demonstrate the significance of this difference with a simple artificial example**. Let's generate a 3-feature linear regression model, with one feature _x<sub>1</sub>_ which is a strong predictor of _y_, a second feature _x<sub>2</sub>_ which is strongly correlated with it (and so slightly less predictive of _y_), and a third non-predictor feature _x<sub>3</sub>_:
 
 ```python
 # Random dataset
@@ -68,7 +74,7 @@ y = X[[0]] + np.random.randn(num_samples,1) # y depends on x1 (and so also on x2
 X.columns = ['Strong predictor of y', 'Correlated with strong predictor', 'Not a predictor of y']
 ```
 
-We'll define an XGB regressor model, run it and compute SHAP values with TreeExplainer...:
+We'll define an XGB regressor model, train it and compute SHAP values with TreeExplainer...:
 
 ```python
 import xgboost as xgb
@@ -78,7 +84,7 @@ xgb_model.fit(X, y)
 explainer = shap.TreeExplainer(xgb_model)
 SHAP_values = explainer.shap_values(X)
 ```
-To get radical Shapley values, we need to first define the payoff function, which simply trains the model and returns its predictions (for simplicity I'm not including any training-validation split etc.)...
+To get radical Shapley values, we need to first define the payoff function, which simply trains the model and returns its predictions (for simplicity I'm not including any training-validation split etc.).
 
 ```python
 import xgboost as xgb
@@ -98,7 +104,7 @@ mean_pred = np.mean(shapley_payoff_XGBreg(X,y))
 radical_shapley_values = reshape_shapley_output(compute_shapley_values(shapley_payoff_XGBreg, X, y, zero_payoff = np.ones(ns)*mean_pred))
 ```
 
-Now let's see how SHAP values and radical Shapley values compare with each other. We'll use the SHAP library's _summary_plot_ visualization tool:
+Now let's see how SHAP values and radical Shapley values compare with each other. We'll use the SHAP library's neat _summary_plot_ visualization tool, which plots the distribution of Shapley values for each feature:
 {% include figure image_path="../assets/images/shapley/artificial_data_summary_plots.png" alt="summary plots" caption="" %}
 
 
@@ -108,7 +114,7 @@ Let's break this down:
 * At the same time, the non-predictive  _x<sub>3</sub>_ is credited with a higher impact using the radical Shapley method - simply because, especially as we did not do a training/validation split, it can  over-fitted to the data in the absence of better predictors.
 
 
-**Now let's try a real-world example**. We will look at Shapley values for one of the datasets included in the SHAP library - the adult census database, with 12 demographic features that are used to predict whether an individual’s income is >50K$ (_shap.datasets.adult()_). For clarity and reduced computation runtime, we’ll include only 6 of the 12 features in our model (_Age, Hours per week, Education, Marital status, Capital gain, and Sex_). Our model will be an XGBoost classifier. How do the TreeExplainer SHAP values and radical Shapley values compare with each other in this case? A simple scatter plot can give us a quick first impression:
+**Now let's try a real-world example**. We will look at Shapley values for one of the datasets included in the SHAP library - the adult census database, with 12 demographic features that are used to predict whether an individual’s income is >50K$ (load with _shap.datasets.adult()_). For clarity and reduced computation runtime, we’ll include only 6 of the 12 features in our model (_Age, Hours per week, Education, Marital status, Capital gain, and Sex_). Our model will be an XGBoost classifier. How do the TreeExplainer SHAP values and radical Shapley values compare with each other in this case? A scatter plot gives us a quick first impression:
 
 {% include figure image_path="../assets/images/shapley/treeexplainer_vs_radical_scatter.png" alt="scatter plot" caption="" %}
 
@@ -120,7 +126,7 @@ Here too the results seem similar enough (although different enough that the ord
 {% include figure image_path="../assets/images/shapley/census_sex_shapley_hist.png" alt="histogram of sex feature Shapley values" caption="" %}
 
 What's going on here?
-* The radical Shapley results show us that **averaged all possible feature combinations, adding this variable will have a consistent impact on prediction for this dataset** (at least until we topple Patriarchy).
+* The radical Shapley results show us that **averaged all possible feature combinations, adding this variable will have a consistent impact on prediction for this dataset** (at least until we finally get rid of the gender wage gap).
 * The TreeExplainer results show us that **in our trained model, this variable has a smaller and less consistent impact on prediction across our samples**, most likely because it is used to explain smaller residual variance after most of the information it conveys was provided by other, more predictive features.
 
 A benefit of implementing our own custom Shapley function is that we have easy access to a wealth of intermediate results - for example, the payoff margins that we calculated for each possible feature combination with vs. without a given feature (and whose weighted average is the Shapley value for each sample). Just for fun, I extracted it from the _compute_shapley_values_ function so we can have a look at how the final Shapley values arise from these individual payoff margins. These are the distributions of payoff margins for the _Sex_ variable, plotted against for the number of features to which it is added:
@@ -136,9 +142,8 @@ We can see how the more features are already in the model, the marginal impact o
 * **SHAP values better explain specific predictions given our existing trained model**.  
 
 <br>
-
 Two additional notes before moving on:
-* **A practical note**: **I am not suggesting that if you care about global feature impact in your dataset you should necessarily use the radical Shapley method** - mainly because in most cases that would be computationally intractable (although see the next two sections for when it might not be). It is also apparent from my examples that the SHAP explainers' results are typically not so different that they should not be used for this purpose. My main motivation here is to get a better understanding of SHAP results and their limitations.
+* **A practical note**: **I am not suggesting that if you care about global feature impact in your dataset you should necessarily use the radical Shapley method** - mainly because in most cases that would be computationally intractable (although see the final sections for when it might not be). It is also apparent from my examples that the SHAP explainers' results are typically not so different that they should not be used for this purpose. My main motivation here is to get a better understanding of SHAP results and their limitations.
 
 * **A technical note**: If you are familiar with TreeExplainer, you may know that since in the case of binary classification the weights of the tree nodes hold not probabilities but log-odd values (which are transformed into probabilities with the logistic function as a final step) - the default optimization approach utilized by TreeExplainer provides SHAP values that add up to these untransformed values (and not the final probabilities). Simply applying the logistic function to the SHAP values themselves wouldn't work, since the sum of the transformed values != the transformed value of the sum. To produce SHAP values that correspond directly to probability outputs, the TreeExplainer has to sacrifice some of its efficiency and use an approach similar to the KernelExplainer of simulating missing features by replacement with a background dataset - naturally a slower and less exact method. On the other hand, to directly explain probability outputs with the radical Shapley method all that we need to do is choose the output of the payoff function to be the probability. **Since with the radical Shapley method we always pay the maximum computation cost, we might as well use a payoff function that gives us exactly what we want our Shapley values to explain**.
 
@@ -184,6 +189,9 @@ The two method produce different but highly correlated results. Another way to s
 
 
 ## Can radical Shapley be faster than KernelExplainer?
+
+![Morpheus meme](../assets/images/shapley/morpheus_meme.jpg)
+
 As we've established, the radical Shapely method needs to re-train the model and produce predictions 2<sup>num. features</sup> times. This makes it impractical whenever the number of features is not low (let's say, more than 15-20). But is it comparable to the SHAP explainers for a low number of features?
 
 One thing to get out of the way is that **the optimized SHAP explainers will always be faster than the radical Shapley method, but the model-blind KernelExplainer can be very slow when explaining a large dataset**. To get a better idea, let's see what goes into the run time of the KernelExplainer vs the radical Shapley method:
@@ -202,14 +210,16 @@ _Train the model_:                              **8 sec** <br>
 _Make predictions for all 100K samples_:        **8 sec** <br>
 _Compute SHAP values for a single prediction_:  **18 sec** (which is, unsurprisingly, about the time it takes to compute predictions for ~200K bootstrapped samples...)<br>
 
-Based on this we can make a rough estimate of how long it would take to compute Shapley values for the entire dataset. The KernelExplainer should simply take 100K x 18 seconds, or **about 500 hours**. The radical Shapley function will run for up to 2<sup>15</sup> x (15+13) seconds, or **about 150 hours** (actually, a better estimate may be about 50 hours since the dataset used for training in each iteration of the algorithm will have 1-14 features, or 7 on average). So both methods are slow although both could also be implemented with parallelization... Anyway, what's important here is not the specific example but understanding where the computation time comes from in each case. **If you need to explain only a small group of "important" predictions, KernelExplainer should be fast enough. If you need to explain a million predictions and you have less than 10-15 features, the radical Shapley method should be much faster.**
+Based on this we can make a rough estimate of how long it would take to compute Shapley values for the entire dataset. The KernelExplainer should simply take 100K x 18 seconds, or **about 500 hours**. The radical Shapley function will run for up to 2<sup>15</sup> x (15+13) seconds, or **about 150 hours** (actually, a better estimate may be about 50 hours since the dataset used for training in each iteration of the algorithm will have 1-14 features, or 7 on average). So both methods are slow though both could benefit from parallelization... Anyway, what's important here is not the specific example but understanding where the computation time comes from in each case. **If you need to explain only a small group of "important" predictions, KernelExplainer should be fast enough. If you need to explain a million predictions and you have less than 10-15 features, the radical Shapley method should be much faster.**
 
 ## A practical compromise? Estimating radical Shapley values with sampling
 
-(This part is just a teaser for the next post).
+(This part is basically a teaser for the next post).
 
-**Okay, but what if our model is not supported by TreeExplainer or DeepExplainer and we have too many features to compute radical Shapley values, but we really need Shapley values for our entire huge dataset?** I believe a relatively simple solution exists in this case, which is to estimate radical Shapley values using a sampling approach. Using random sampling to estimate Shapley values for a high number of players (as is done e.g. by the KernelExplainer) has been thoroughly discussed in the literature and improved methods are still being developed (see for example [Castro et al. 2009](https://www.sciencedirect.com/science/article/pii/S0305054808000804), [Castro et al. 2017](https://www.sciencedirect.com/science/article/pii/S030505481730028X) or [Benati et al. 2019](https://www.sciencedirect.com/science/article/abs/pii/S0377221719304448)). I would suggest that it can be beneficial to use sampling in combination with the radical Shapley approach - that is, to sample the space of feature combinations on which the model is trained (thus not needing to simulate missing features by averaging over bootstrapped samples).
+**Okay, but what if our model is not supported by TreeExplainer or DeepExplainer and we have too many features to compute radical Shapley values, but we really need Shapley values for our entire huge dataset?** I believe a relatively simple solution exists in this case, which is to estimate radical Shapley values using a sampling approach. Using random sampling to estimate Shapley values for a high number of players (as is done e.g. by the KernelExplainer) has been thoroughly discussed in the literature and improved methods are still being developed (see for example [Castro et al. 2009](https://www.sciencedirect.com/science/article/pii/S0305054808000804), [Castro et al. 2017](https://www.sciencedirect.com/science/article/pii/S030505481730028X) or [Benati et al. 2019](https://www.sciencedirect.com/science/article/abs/pii/S0377221719304448)). I would suggest that sampling can work well in combination with the radical Shapley approach - that is, to sample the space of feature combinations on which the model is trained (thus not needing to simulate missing features by averaging over bootstrapped samples).
 
-The reason that this could be more efficient that using the KernelExplainer should be clear when looking at the table in the previous section: it eliminate the exponential computational complexity represented in the first row (by paying for it with increased estimation variance), leaving the dependence on training time the only computational disadvantage compared to the KernelExplainer, which in turn suffers from having to run the model a large number of times for every explained prediction. In the example given above, limiting the number of model re-training iterations to the same _nsamples_ parameters of the KernelExplainer would cut run time from 50-150 hours to about 10 hours (compared to KernelExplainer's ~500)- and crucially, **the sampling would assure that this would not increase significantly when increasing the number of features**
+The table in the previous section makes is clear why this could be more efficient than using the KernelExplainer: since both methods would be equally insensitive to the number of features, the radical Shapley method would be faster as long as training the model a fixed  _nsamples_ number of times is faster than running it to generate ~200K outputs for each single explained prediction. In the example given above, using the same _nsamples_ default value as KernelExplainer would reduce run time from 50-150 hours to about 10 hours (compared to KernelExplainer's ~500)- and crucially, this would not significantly increase with the number of features.
 
 This is only a theoretical idea, and I would not make this post longer than it already is by developing it further. I would however be happy to get any comments you may about this (maybe you've already encountered this idea somewhere else?), and I hope to get a chance to complete this project and discuss it in a future post.
+
+<font size="-1"> <b>If you wish to comment on this post you may do so on <a href="https://medium.com/@edden.gerber/XXX">Medium</a>.</b> <font size="+1">

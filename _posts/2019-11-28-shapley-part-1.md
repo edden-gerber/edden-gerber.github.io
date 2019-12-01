@@ -14,8 +14,6 @@ toc_sticky: true
 
 This post is the first in a series of two (or three) posts about explaining statistical models with Shapley values. I can think of two main reasons you might want to read it (apart from, you know, for fun):
 
-![Why are we here meme](../assets/images/shapley/why_we_are_here_meme.jpg)
-
 1. **To learn about Shapley values and the SHAP python library**. This is what this post is about after all. The explanations it provides are far from exhaustive, and contain nothing that cannot be gathered from other online sources, but it should still serve as a good quick intro or bonus reading on this subject.
 2. **As an introduction or refresher before reading the next post about radical Shapley values**. The next post is my attempt at a novel contribution to the topic of Shapley values in machine learning. You may be already familiar with SHAP and Shapley and are just glancing over this post to make sure we're on common ground, or you may be here to clear up something confusing from the next post.
 
@@ -95,5 +93,7 @@ And then use one of the SHAP library's pretty visualization functions to look at
 
 ![SHAP values of the predicted probability that you will like this post](../assets/images/shapley/liking_this_post.png)
 
-## Got it! Now what?
+## Got it! What's next?
 All this was just to get us synced-up on Shapley values and the SHAP explainers. You can stop here and continue (or start) making use of this great tool in your own work. **But if you want to go a bit deeper, get a better understanding of this topic and possibly another tool in your toolset, keep reading the [next post]()!**.
+
+ <font size="-1"> <b>If you wish to comment on this post you may do so on <a href="https://medium.com/@edden.gerber/XXX">Medium</a>.</b> <font size="+1">
