@@ -1,7 +1,7 @@
 ---
 title: "A new perspective on Shapley values, part I: Intro to Shapley and SHAP"
 canonical_url: "https://edden-gerber.github.io/shapley-part-1/"
-date: 2019-11-26
+date: 2019-11-28
 share: true
 excerpt: "An explanation of Shapley values and the SHAP python library"
 header:
