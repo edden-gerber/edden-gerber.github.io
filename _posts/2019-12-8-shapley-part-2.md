@@ -10,7 +10,7 @@ header:
 toc: true
 toc_sticky: true
 ---
-** **EDIT, 2.1.2020:** I renamed the method presented here *Naive Shapley* from the less intuitive *Radical Shapley*. This was changed throughout the post but the code snippets and git repository may still reflect the old name. **
+** **EDIT, Jan 2020:** I renamed the method presented here *Naive Shapley* from the less intuitive *Radical Shapley*. This was changed throughout the post but the code snippets and git repository may still reflect the old name. **
 
 ## Why should you read this post?
 * **For insight into Shapley values and the SHAP tool**. Most other sources on these topics are explanations based on existing primary sources (e.g. academic papers and the SHAP documentation). This post is an attempt to gain some understanding through an empirical approach.
