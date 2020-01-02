@@ -15,7 +15,7 @@ toc_sticky: true
 This post is the first in a series of two (or three) posts about explaining statistical models with Shapley values. I can think of two main reasons you might want to read it (apart from, you know, for fun):
 
 1. **To learn about Shapley values and the SHAP python library**. This is what this post is about after all. The explanations it provides are far from exhaustive, and contain nothing that cannot be gathered from other online sources, but it should still serve as a good quick intro or bonus reading on this subject.
-2. **As an introduction or refresher before reading the next post about radical Shapley values**. The next post is my attempt at a novel contribution to the topic of Shapley values in machine learning. You may be already familiar with SHAP and Shapley and are just glancing over this post to make sure we're on common ground, or you may be here to clear up something confusing from the next post.
+2. **As an introduction or refresher before reading the next post about Naive Shapley values**. The next post is my attempt at a novel contribution to the topic of Shapley values in machine learning. You may be already familiar with SHAP and Shapley and are just glancing over this post to make sure we're on common ground, or you may be here to clear up something confusing from the next post.
 
 ## What are Shapley Values?
 
@@ -74,7 +74,7 @@ What have we gained by using TreeExplainer? First, **we got rid of all the sampl
 
 
 ### Wait, what about DeepExplainer?
-DeepExplainer is a class specialized for computing SHAP values for neural network models. I am not including a detailed explanation of it here because **1**. I lack the hands-on-experience I have with the other explainers that allows me to vouch for my explanations of them, and **2**. this post is mainly a preamble to the next one where the SHAP explainers will be compared to the radical Shapley values approach, and this comparison is largely irrelevant when it comes to explaining neural networks.
+DeepExplainer is a class specialized for computing SHAP values for neural network models. I am not including a detailed explanation of it here because **1**. I lack the hands-on-experience I have with the other explainers that allows me to vouch for my explanations of them, and **2**. this post is mainly a preamble to the next one where the SHAP explainers will be compared to the Naive Shapley values approach, and this comparison is largely irrelevant when it comes to explaining neural networks.
 
 As a rough overview, the DeepExplainer is much faster for neural network models than the KernelExplainer, but similarly uses a background dataset and the trained model to estimate SHAP values, and so similar conclusions about the nature of the computed Shapley values can be applied in this case - they vary (though not to a large extent) based on the selection of background data, and they may not respect dependencies between features when generating the bootstrapped samples used for estimation.
 
